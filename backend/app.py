@@ -80,10 +80,10 @@ def seminar1_task1():
     )
 
 
-@app.route("/seminar2/interface")
-def seminar2_interface():
+@app.route("/seminar1/task3")
+def seminar1_task3():
     """Шаблон интерфейса АСУ отдела тестирования ПО."""
-    return render_template("seminar2/interface.html", title="АСУ отдела тестирования ПО")
+    return render_template("seminar1/task3.html", title="АСУ отдела тестирования ПО")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
