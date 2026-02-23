@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:24.0.4
+    container_name: cloudbeaver
+    restart: unless-stopped
+
+    # ВАЖНО: пробрасываем 8978 НА 8978
+    ports:
+      - "8978:8978"
+
+    environment:
+      - CB_SERVER_JAVA_OPTS=-Xms128m -Xmx256m
+
+    volumes:
+      - ./cloudbeaver/workspace:/opt/cloudbeaver/workspace

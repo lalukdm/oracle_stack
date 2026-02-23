@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+  <h1>Главная</h1>
+  <p>Это учебный сервер для выполнения лабораторных и семинаров.</p>
+
+  <div class="card-list">
+    <a class="card" href="{{ url_for('seminar1_index') }}">
+      <h2>Семинар 1</h2>
+      <p>Интерфейсные модули, формы, работа с выбором данных.</p>
+    </a>
+    <a class="card" href="{{ url_for('db_test') }}">
+      <h2>Проверка БД</h2>
+      <p>Быстрый тест соединения с Oracle XE (JSON).</p>
+    </a>
+  </div>
+{% endblock %}

@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+
+# Docker
+*.log
+.env
+oracle-data/
+cloudbeaver/workspace/
+cloudbeaver/.data/
+cloudbeaver/.logs/
+
+# IDE
+.vscode/
+.idea/
+
+# Системное
+.DS_Store

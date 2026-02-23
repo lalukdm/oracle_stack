@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Результат – Задание 1{% endblock %}
+
+{% block content %}
+  <h1>Результат обработки формы</h1>
+
+  <div class="result-card">
+    <p><strong>Выбранный факультет:</strong> {{ faculty_text }}</p>
+
+    <p><strong>Ваши интересы:</strong></p>
+    {% if interests_text %}
+      <ul>
+        {% for item in interests_text %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Ничего не выбрано.</p>
+    {% endif %}
+  </div>
+
+  <div class="form-actions">
+    <a href="{{ url_for('seminar1_task1') }}" class="btn">Вернуться к форме</a>
+    <a href="{{ url_for('seminar1_index') }}" class="btn btn-secondary">К меню семинара 1</a>
+  </div>
+{% endblock %}

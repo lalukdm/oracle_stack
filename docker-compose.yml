@@ -1,0 +1,41 @@
+services:
+  oracle:
+    image: wnameless/oracle-xe-11g-r2
+    container_name: oracle-db
+    restart: unless-stopped
+
+    environment:
+      - ORACLE_ALLOW_REMOTE=true
+
+    ports:
+      - "1521:1521"
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: unless-stopped
+
+    environment:
+      - ORACLE_DSN=oracle-db:1521/XE
+      - ORACLE_USER=system
+      - ORACLE_PASSWORD=oracle
+
+    depends_on:
+      - oracle
+
+    expose:
+      - "5000"
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    restart: unless-stopped
+
+    depends_on:
+      - backend
+
+    ports:
+      - "80:80"
+
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro

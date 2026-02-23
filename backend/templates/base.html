@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Учебный проект{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">Учебный проект</div>
+      <nav class="nav">
+        <a href="{{ url_for('index') }}">Главная</a>
+        <a href="{{ url_for('seminar1_index') }}">Семинар 1</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>Сервер: Python + Flask + Oracle XE</span>
+    </div>
+  </footer>
+</body>
+</html>
