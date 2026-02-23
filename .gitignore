@@ -5,10 +5,7 @@ __pycache__/
 # Docker
 *.log
 .env
-oracle-data/
-cloudbeaver/workspace/
-cloudbeaver/.data/
-cloudbeaver/.logs/
+
 
 # IDE
 .vscode/
