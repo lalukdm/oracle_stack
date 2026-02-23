@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}АСУ отдела тестирования ПО{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/seminar2.css') }}">
+
+<div class="asu-layout">
+
+  <!-- ЛЕВАЯ КОЛОНКА: НАВИГАЦИЯ ПО МОДУЛЯМ -->
+  <aside class="asu-sidebar">
+    <div class="asu-sidebar-header">
+      <h2>Модули</h2>
+    </div>
+
+    <nav class="asu-nav">
+      <button class="asu-nav-item asu-nav-item-active">
+        <span class="asu-nav-title">Клиенты</span>
+        <span class="asu-nav-sub">карточки заказчиков</span>
+      </button>
+
+      <button class="asu-nav-item">
+        <span class="asu-nav-title">Сотрудники</</span>
+        <span class="asu-nav-sub">тестировщики и аналитики</span>
+      </button>
+
+      <button class="asu-nav-item">
+        <span class="asu-nav-title">Проекты</span>
+        <span class="asu-nav-sub">ПО в тестировании</span>
+      </button>
+
+      <button class="asu-nav-item">
+        <span class="asu-nav-title">Планы тестирования</span>
+        <span class="asu-nav-sub">итерации и релизы</span>
+      </button>
+
+      <button class="asu-nav-item">
+        <span class="asu-nav-title">Тест-кейсы</span>
+        <span class="asu-nav-sub">каталог сценариев</span>
+      </button>
+
+      <button class="asu-nav-item">
+        <span class="asu-nav-title">Дефекты</span>
+        <span class="asu-nav-sub">bug-трекер</span>
+      </button>
+
+      <button class="asu-nav-item">
+        <span class="asu-nav-title">Отчёты</span>
+        <span class="asu-nav-sub">срезы по релизам</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- ПРАВАЯ КОЛОНКА: РАБОЧАЯ ОБЛАСТЬ -->
+  <section class="asu-main">
+    <header class="asu-main-header">
+      <div>
+        <h1>АСУ отдела тестирования ПО</h1>
+        <p class="asu-main-subtitle">
+          Шаблон интерфейсной формы: управление клиентами, проектами, тест-кейсами, дефектами и отчётами.
+        </p>
+      </div>
+
+      <div class="asu-main-controls">
+        <label class="asu-field">
+          <span class="asu-label">Текущий проект</span>
+          <select>
+            <option>Выбрать проект…</option>
+            <option>Мобильное приложение</option>
+            <option>Веб-портал</option>
+            <option>Внутренняя CRM</option>
+          </select>
+        </label>
+
+        <label class="asu-field">
+          <span class="asu-label">Релиз</span>
+          <select>
+            <option>R1.0</option>
+            <option>R1.1</option>
+            <option>R2.0</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <!-- СТРОКА КАРТОЧЕК С ИНФО -->
+    <div class="asu-cards-row">
+      <div class="asu-card">
+        <div class="asu-card-label">Клиенты</div>
+        <div class="asu-card-value">–</div>
+        <div class="asu-card-hint">количество клиентских организаций</div>
+      </div>
+      <div class="asu-card">
+        <div class="asu-card-label">Активные проекты</div>
+        <div class="asu-card-value">–</div>
+        <div class="asu-card-hint">в работе у отдела тестирования</div>
+      </div>
+      <div class="asu-card">
+        <div class="asu-card-label">Открытые дефекты</div>
+        <div class="asu-card-value asu-card-value-bad">–</div>
+        <div class="asu-card-hint">по выбранному проекту / релизу</div>
+      </div>
+      <div class="asu-card">
+        <div class="asu-card-label">Покрытие тестами</div>
+        <div class="asu-card-value">– %</div>
+        <div class="asu-card-hint">рассчитывается на стороне БД</div>
+      </div>
+    </div>
+
+    <!-- НИЖНИЙ БЛОК: СПИСОК + ФОРМА ФИЛЬТРАЦИИ -->
+    <div class="asu-bottom">
+      <!-- Фильтры / форма -->
+      <div class="asu-filter-panel">
+        <h2>Форма фильтрации сущностей</h2>
+        <p class="asu-filter-note">
+          Здесь позже будут реальные запросы к Oracle (клиенты, сотрудники, задачи, тест-кейсы, дефекты).
+          Сейчас это только шаблон формы.
+        </p>
+
+        <form class="asu-filter-form">
+          <div class="asu-field">
+            <span class="asu-label">Тип сущности</span>
+            <select name="entity">
+              <option value="clients">Клиенты</option>
+              <option value="employees">Сотрудники</option>
+              <option value="projects">Проекты</option>
+              <option value="testplans">Планы тестирования</option>
+              <option value="testcases">Тест-кейсы</option>
+              <option value="bugs">Дефекты</option>
+              <option value="reports">Отчёты</option>
+            </select>
+          </div>
+
+          <div class="asu-field">
+            <span class="asu-label">Строка поиска</span>
+            <input type="text" name="q" placeholder="Название клиента, проекта, тест-кейса…" />
+          </div>
+
+          <div class="asu-field-grid">
+            <label class="asu-checkbox">
+              <input type="checkbox" name="only_active" checked />
+              <span>Только активные</span>
+            </label>
+            <label class="asu-checkbox">
+              <input type="checkbox" name="has_open_bugs" />
+              <span>Есть открытые дефекты</span>
+            </label>
+            <label class="asu-checkbox">
+              <input type="checkbox" name="has_test_plan" />
+              <span>Есть план тестирования</span>
+            </label>
+            <label class="asu-checkbox">
+              <input type="checkbox" name="has_reports" />
+              <span>Сформированы отчёты</span>
+            </label>
+          </div>
+
+          <div class="asu-filter-actions">
+            <button type="submit" class="asu-btn-primary" disabled>
+              Применить (пока заглушка)
+            </button>
+            <button type="reset" class="asu-btn-secondary">
+              Сбросить
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Таблица-заглушка -->
+      <div class="asu-table-panel">
+        <div class="asu-table-header">
+          <h2>Результат выборки</h2>
+          <span class="asu-table-caption">
+            Здесь будет отображаться список клиентов / проектов / тест-кейсов / дефектов из базы Oracle.
+          </span>
+        </div>
+
+        <div class="asu-table-wrapper">
+          <table class="asu-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Название / ФИО</th>
+                <th>Статус</th>
+                <th>Приоритет</th>
+                <th>Ответственный</th>
+                <th>Последнее изменение</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="6" class="asu-table-empty">
+                  Данные пока не подключены. На следующем шаге сюда привяжем реальные запросы к Oracle.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
