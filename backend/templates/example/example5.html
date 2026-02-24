@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Пример 5: Обработка формы с результатом{% endblock %}
+
+{% block content %}
+    <h1>Пример 5: Обработка формы</h1>
+
+    {% if result %}
+    <div style="background-color: #f0f0f0; padding: 15px; margin-bottom: 20px; border-radius: 5px; border-left: 4px solid #2196F3;">
+        <h3>Результат:</h3>
+        {{ result|safe }}
+    </div>
+    {% endif %}
+
+    <form method="post">
+        <h3>Любимый предмет:</h3>
+        <input type="radio" name="kurs" value="КТБД" {% if request.form.get('kurs') == 'КТБД' %}checked{% endif %}>Конструкторско-технологические базы данных<br>
+        <input type="radio" name="kurs" value="СФМ" {% if request.form.get('kurs') == 'СФМ' %}checked{% endif %}>Системы функционального моделирования<br>
+        <input type="radio" name="kurs" value="СИИ" {% if request.form.get('kurs') == 'СИИ' %}checked{% endif %}>Системы искусственного интеллекта<br>
+
+        <h3>Когда вы предпочитаете его изучать:</h3>
+        <input type="checkbox" name="times" value="m" {% if 'm' in request.form.getlist('times') %}checked{% endif %}>за завтраком<br>
+        <input type="checkbox" name="times" value="n" {% if 'n' in request.form.getlist('times') %}checked{% endif %}>в обед<br>
+        <input type="checkbox" name="times" value="d" {% if 'd' in request.form.getlist('times') %}checked{% endif %}>за ужином<br>
+        <input type="checkbox" name="times" value="l" {% if 'l' in request.form.getlist('times') %}checked{% endif %}>поздно ночью<br>
+
+        <br>
+        <input type="submit" value="Отправить">
+    </form>
+
+    <div class="form-actions">
+        <a href="{{ url_for('example_index') }}" class="btn">Вернуться к Примерам</a>
+        <a href="{{ url_for('example_6') }}" class="btn btn-secondary">Следующий пример</a>
+    </div>
+{% endblock %}

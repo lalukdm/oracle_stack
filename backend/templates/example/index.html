@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}ПРИМЕРЫ 1{% endblock %}
+
+{% block content %}
+  <h1>Примера на питоне</h1>
+  <p>Работа с HTML-формами и обработкой данных на сервере (Python + Flask).</p>
+
+  <ul class="link-list">
+    <li><a href="{{ url_for('example_1') }}">Пример 1</a></li>
+    <li><a href="{{ url_for('example_2') }}">Пример 2</a></li>
+    <li><a href="{{ url_for('example_3') }}">Пример 3</a></li>
+    <li><a href="{{ url_for('example_4') }}">Пример 4</a></li>
+    <li><a href="{{ url_for('example_5') }}">Пример 5</a></li>
+    <li><a href="{{ url_for('example_6') }}">Пример 6</a></li>
+    <li><a href="{{ url_for('example_7') }}">Пример 7</a></li>
+    <li><a href="{{ url_for('example_8') }}">Пример 8</a></li>
+    <li><a href="{{ url_for('example_9') }}">Пример 9</a></li>
+  </ul>
+{% endblock %}

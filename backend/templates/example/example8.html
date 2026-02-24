@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Пример 8: Вычислительные возможности Oracle{% endblock %}
+
+{% block content %}
+    <h1>Пример 8: Вычислительные возможности Oracle</h1>
+
+    {% if error %}
+    <div style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px; border: 1px solid #f5c6cb;">
+        <h3 style="margin: 0; color: #721c24;">❌ Невозможно подключиться к базе: {{ error }}</h3>
+    </div>
+    {% endif %}
+
+    {% if calc %}
+    <div style="margin: 20px 0; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">
+        <h3>Результаты вычислений в Oracle:</h3>
+        
+        <table style="width: 50%; border-collapse: collapse; margin-top: 15px;">
+            <tr style="background-color: #007bff; color: white;">
+                <th style="padding: 10px; text-align: left;">Операция</th>
+                <th style="padding: 10px; text-align: left;">Результат</th>
+            </tr>
+            <tr style="background-color: white;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">SIN(3.14)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ calc.sin }}</td>
+            </tr>
+            <tr style="background-color: #f9f9f9;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">COS(3.14)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ calc.cos }}</td>
+            </tr>
+            <tr style="background-color: white;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">EXP(2)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ calc.exp }}</td>
+            </tr>
+            <tr style="background-color: #f9f9f9;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">POWER(5, 3)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ calc.power }}</td>
+            </tr>
+            <tr style="background-color: white;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">SQRT(16)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ calc.sqrt }}</td>
+            </tr>
+            <tr style="background-color: #f9f9f9;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">MOD(10, 3)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ calc.mod }}</td>
+            </tr>
+            <tr style="background-color: white;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">ROUND(3.14159, 2)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ calc.round }}</td>
+            </tr>
+            <tr style="background-color: #f9f9f9;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">TRUNC(3.14159, 2)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ calc.trunc }}</td>
+            </tr>
+            <tr style="background-color: white;">
+                <td style="padding: 10px;">ABS(-10)</td>
+                <td style="padding: 10px;">{{ calc.abs }}</td>
+            </tr>
+        </table>
+        
+        <p style="margin-top: 20px; color: #666;">
+            <i>Все вычисления выполнены непосредственно в Oracle Database</i>
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="form-actions" style="margin-top: 30px;">
+        <a href="{{ url_for('example_index') }}" class="btn">Вернуться к Примерам</a>
+        <a href="{{ url_for('example_9') }}" class="btn btn-secondary">Следующий пример</a>
+    </div>
+{% endblock %}

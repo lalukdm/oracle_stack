@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Пример 2: объявление переменных{% endblock %}
+
+{% block content %}
+    <h1>Пример 2: объявление переменных</h1>
+    
+    {% set a = 1 %}
+    {% set b = 2 %}
+    <p>a = {{ a }}</p>
+    <p>b = {{ b }}</p>
+
+    {% set c = a + b %}
+    <p>c = a + b = {{ c }}</p>
+
+    <div class="form-actions">
+        <a href="{{ url_for('example_index') }}" class="btn">Вернуться к Примерам</a>
+        <a href="{{ url_for('example_3') }}" class="btn btn-secondary">Следующий пример</a>
+    </div>
+{% endblock %}

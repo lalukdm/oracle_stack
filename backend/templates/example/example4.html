@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Пример 4: Передача нескольких значений из формы{% endblock %}
+
+{% block content %}
+    <h1>Пример 4: Передача нескольких значений из формы</h1>
+
+    <p>name = {{ name if name else "" }}</p>
+    <p>e-mail = {{ email if email else "" }}</p>
+
+    <form method="get">
+        Name: <input type="text" name="name" value="{{ name if name else '' }}"><br>
+        E-mail: <input type="text" name="email" value="{{ email if email else '' }}"><br>
+        <input type="submit">
+    </form>
+
+    <div class="form-actions">
+        <a href="{{ url_for('example_index') }}" class="btn">Вернуться к Примерам</a>
+        <a href="{{ url_for('example_5') }}" class="btn btn-secondary">Следующий пример</a>
+    </div>
+{% endblock %}

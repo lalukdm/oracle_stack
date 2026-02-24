@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Задание 4: Отчеты по схеме HR{% endblock %}
+
+{% block content %}
+    <h1>Задание 4: Отчеты по схеме HR</h1>
+    
+    {% if error %}
+    <div style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px; border: 1px solid #f5c6cb;">
+        <h3 style="margin: 0; color: #721c24;">❌ Ошибка подключения к базе: {{ error }}</h3>
+    </div>
+    {% endif %}
+
+    {% if tasks %}
+    <div style="margin: 20px 0;">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            <a href="#task1" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 1</a>
+            <a href="#task2" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 2</a>
+            <a href="#task3" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 3</a>
+            <a href="#task4" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 4</a>
+            <a href="#task5" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 5</a>
+            <a href="#task6" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 6</a>
+            <a href="#task7" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 7</a>
+            <a href="#task8" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 8</a>
+            <a href="#task9" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 9</a>
+            <a href="#task10" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Задание 10</a>
+        </div>
+        
+        {% for task_num, task_data in tasks.items() %}
+        <div id="task{{ task_num }}" style="margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid {% if task_data.count == task_data.expected %}#28a745{% else %}#dc3545{% endif %};">
+            <h3>Задание {{ task_num }}: {{ task_data.title }}</h3>
+            
+            <div style="margin-bottom: 15px; padding: 10px; background-color: #e9ecef; border-radius: 4px;">
+                <strong>SQL запрос:</strong>
+                <pre style="margin: 5px 0; padding: 10px; background-color: white; border-radius: 4px; overflow-x: auto;">{{ task_data.sql }}</pre>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Результат:</strong> 
+                <span style="color: {% if task_data.count == task_data.expected %}#28a745{% else %}#dc3545{% endif %};">
+                    получено {{ task_data.count }} строк (ожидалось {{ task_data.expected }})
+                </span>
+            </div>
+            
+            {% if task_data.result %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background-color: white; border-radius: 4px; overflow: hidden;">
+                    <thead>
+                        <tr style="background-color: #007bff; color: white;">
+                            {% if task_num == '1' %}
+                                <th style="padding: 10px; text-align: left;">First Name</th>
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Salary</th>
+                            {% elif task_num == '2' %}
+                                <th style="padding: 10px; text-align: left;">First Name</th>
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Manager ID</th>
+                            {% elif task_num == '3' %}
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Email</th>
+                                <th style="padding: 10px; text-align: left;">Phone Number</th>
+                            {% elif task_num == '4' %}
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Salary</th>
+                                <th style="padding: 10px; text-align: left;">Commission PCT</th>
+                            {% elif task_num == '5' %}
+                                <th style="padding: 10px; text-align: left;">First Name</th>
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Salary</th>
+                                <th style="padding: 10px; text-align: left;">Phone Number</th>
+                            {% elif task_num == '6' %}
+                                <th style="padding: 10px; text-align: left;">First Name</th>
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Salary</th>
+                                <th style="padding: 10px; text-align: left;">Commission PCT</th>
+                                <th style="padding: 10px; text-align: left;">Job ID</th>
+                            {% elif task_num == '7' %}
+                                <th style="padding: 10px; text-align: left;">First Name</th>
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Manager ID</th>
+                            {% elif task_num == '8' %}
+                                <th style="padding: 10px; text-align: left;">First Name</th>
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Hire Date</th>
+                            {% elif task_num == '9' %}
+                                <th style="padding: 10px; text-align: left;">Department ID</th>
+                                <th style="padding: 10px; text-align: left;">Last Name</th>
+                                <th style="padding: 10px; text-align: left;">Phone Number</th>
+                            {% elif task_num == '10' %}
+                                <th style="padding: 10px; text-align: left;">Department ID</th>
+                                <th style="padding: 10px; text-align: left;">Manager ID</th>
+                                <th style="padding: 10px; text-align: left;">Head Manager ID</th>
+                                <th style="padding: 10px; text-align: left;">Head Department</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in task_data.result %}
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            {% for cell in row %}
+                            <td style="padding: 8px 10px;">{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color: #6c757d;">Нет данных для отображения</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="form-actions" style="margin-top: 30px;">
+        <a href="{{ url_for('seminar1_index') }}" class="btn">Вернуться к семинару 1</a>
+        <a href="{{ url_for('example_index') }}" class="btn btn-secondary">К примерам</a>
+    </div>
+{% endblock %}

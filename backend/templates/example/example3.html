@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Пример 3: Передача значения из формы{% endblock %}
+
+{% block content %}
+    <h1>Пример 3: Передача значения из формы</h1>
+
+    {% if name %}
+    <h2>Привет, {{ name }}!</h2>
+    {% endif %}
+
+    <form method="post">
+        Name: <input type="text" name="name" value="{{ name if name else '' }}"><br>
+        <input type="submit" value="Отправить">
+    </form>
+
+    <div class="form-actions">
+        <a href="{{ url_for('example_index') }}" class="btn">Вернуться к Примерам</a>
+        <a href="{{ url_for('example_4') }}" class="btn btn-secondary">Следующий пример</a>
+    </div>
+{% endblock %}

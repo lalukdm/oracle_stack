@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Пример 1: варианты объявления PHP скрипта{% endblock %}
+
+{% block content %}
+  <h1>Пример 1: варианты объявления PHP скрипта</h1>
+
+    1. Простейший способ, но возможен конфликт при использовании XML <br>
+    2. Наиболее распространенный способ <br>
+    3. Начиная с PHP 3.0.4 можно факультативно применять ASP-теги <br>
+    4. Используется для лучшей совместимости с HTML редакторами <br>
+
+
+  <div class="form-actions">
+    <a href="{{ url_for('example_index') }}" class="btn">Вернуться к Примерам</a>
+    <a href="{{ url_for('example_2') }}" class="btn btn-secondary">Следующий пример</a>
+  </div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Объекты пользователя Oracle{% endblock %}
+
+{% block content %}
+    <h1>Объекты пользователя Oracle</h1>
+
+    {% if error %}
+    <div style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px; border: 1px solid #f5c6cb;">
+        <h3 style="margin: 0; color: #721c24;">❌ Невозможно подключиться к базе: {{ error }}</h3>
+    </div>
+    {% endif %}
+
+    {% if objects %}
+    <div style="margin: 20px 0;">
+        <center>
+        <table border="1" style="border-collapse: collapse; width: 80%;">
+            <tr style="background-color: #f2f2f2;">
+                <td><center><b>OBJECT_NAME</b></center></td>
+                <td><center><b>OBJECT_TYPE</b></center></td>
+            </tr>
+            {% for object_name, object_type in objects %}
+            <tr>
+                <td>{{ object_name }}</td>
+                <td>{{ object_type }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        </center>
+        <p style="margin-top: 10px;">Всего объектов: {{ objects|length }}</p>
+    </div>
+    {% endif %}
+
+    <div class="form-actions" style="margin-top: 30px;">
+        <a href="{{ url_for('example_index') }}" class="btn">Вернуться к Примерам</a>
+        <a href="{{ url_for('example_8') }}" class="btn btn-secondary">Следующий пример</a>
+    </div>
+{% endblock %}

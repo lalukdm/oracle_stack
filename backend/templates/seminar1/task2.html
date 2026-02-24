@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Задание 2: Числовые функции Oracle{% endblock %}
+
+{% block content %}
+    <h1>Задание 2: Числовые функции Oracle</h1>
+    <h3>с точностью до 5 знака после запятой</h3>
+
+    {% if error %}
+    <div style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px; border: 1px solid #f5c6cb;">
+        <h3 style="margin: 0; color: #721c24;">❌ Ошибка подключения к базе: {{ error }}</h3>
+    </div>
+    {% endif %}
+
+    {% if functions %}
+    <div style="margin: 20px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        
+        <table style="width: 60%; border-collapse: collapse; margin-top: 15px; background-color: white; border-radius: 5px; overflow: hidden;">
+            <thead>
+                <tr style="background-color: #007bff; color: white;">
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Функция</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Результат (5 знаков)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: white;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">sin(3.14)</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.sin) }}</td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">cos(3.14)</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.cos) }}</td>
+                </tr>
+                <tr style="background-color: white;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">tan(π/4)</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.tan) }}</td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">sqrt(2)</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.sqrt) }}</td>
+                </tr>
+                <tr style="background-color: white;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">exp(1)</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.exp) }}</td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">2^8</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.power) }}</td>
+                </tr>
+                <tr style="background-color: white;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">abs(-12.345678)</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.abs) }}</td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">log(100) по основанию 10</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.log) }}</td>
+                </tr>
+                <tr style="background-color: white;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">mod(17, 5)</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.mod) }}</td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">ceil(4.2)</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6; font-family: monospace;">{{ "%.5f"|format(functions.ceil) }}</td>
+                </tr>
+                <tr style="background-color: white;">
+                    <td style="padding: 12px;">floor(4.8)</td>
+                    <td style="padding: 12px; font-family: monospace;">{{ "%.5f"|format(functions.floor) }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p style="margin-top: 20px; color: #6c757d; font-style: italic;">
+            * Все значения округлены до 5 знаков после запятой с помощью ROUND() в Oracle
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="form-actions" style="margin-top: 30px;">
+        <a href="{{ url_for('seminar1_index') }}" class="btn">Вернуться к семинару 1</a>
+        <a href="{{ url_for('example_index') }}" class="btn btn-secondary">К примерам</a>
+    </div>
+{% endblock %}
