@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Добавление дефекта{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="add-form-container">
+    <h1>Добавление нового дефекта</h1>
+
+    {% if error %}
+    <div class="error-message" style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <p style="color: #721c24;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <form method="post" class="add-form">
+        <div class="form-group">
+            <label>Название дефекта *</label>
+            <input type="text" name="defect_title" required class="form-control" 
+                   value="{{ request.form.defect_title or '' }}">
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Проект</label>
+                <select name="project_id" class="form-control" id="project-select">
+                    <option value="">Выберите проект</option>
+                    {% for proj in projects %}
+                    <option value="{{ proj[0] }}" {% if request.form.project_id == proj[0]|string %}selected{% endif %}>
+                        {{ proj[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Тест-кейс</label>
+                <select name="testcase_id" class="form-control" id="testcase-select">
+                    <option value="">Не связан с тест-кейсом</option>
+                    {% for tc in testcases %}
+                    <option value="{{ tc[0] }}" {% if request.form.testcase_id == tc[0]|string %}selected{% endif %}>
+                        {{ tc[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Описание</label>
+            <textarea name="description" class="form-control" rows="4">{{ request.form.description or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Шаги для воспроизведения</label>
+            <textarea name="steps_to_reproduce" class="form-control" rows="4">{{ request.form.steps_to_reproduce or '' }}</textarea>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Серьезность *</label>
+                <select name="severity" required class="form-control">
+                    <option value="BLOCKER" {% if request.form.severity == 'BLOCKER' %}selected{% endif %}>BLOCKER - Блокирующая</option>
+                    <option value="CRITICAL" {% if request.form.severity == 'CRITICAL' or not request.form.severity %}selected{% endif %}>CRITICAL - Критическая</option>
+                    <option value="MAJOR" {% if request.form.severity == 'MAJOR' %}selected{% endif %}>MAJOR - Значительная</option>
+                    <option value="MINOR" {% if request.form.severity == 'MINOR' %}selected{% endif %}>MINOR - Незначительная</option>
+                    <option value="TRIVIAL" {% if request.form.severity == 'TRIVIAL' %}selected{% endif %}>TRIVIAL - Тривиальная</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Приоритет</label>
+                <select name="priority" class="form-control">
+                    <option value="1" {% if request.form.priority == '1' %}selected{% endif %}>1 - Немедленный</option>
+                    <option value="2" {% if request.form.priority == '2' %}selected{% endif %}>2 - Высокий</option>
+                    <option value="3" {% if not request.form.priority or request.form.priority == '3' %}selected{% endif %}>3 - Средний</option>
+                    <option value="4" {% if request.form.priority == '4' %}selected{% endif %}>4 - Низкий</option>
+                    <option value="5" {% if request.form.priority == '5' %}selected{% endif %}>5 - Очень низкий</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Назначено на</label>
+                <select name="assigned_to" class="form-control">
+                    <option value="">Не назначено</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp[0] }}" {% if request.form.assigned_to == emp[0]|string %}selected{% endif %}>
+                        {{ emp[1] }} {{ emp[2] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Сообщил *</label>
+                <select name="reported_by" required class="form-control">
+                    <option value="">Выберите сотрудника</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp[0] }}" {% if request.form.reported_by == emp[0]|string %}selected{% endif %}>
+                        {{ emp[1] }} {{ emp[2] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="asu-btn-success">Сохранить</button>
+            <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('project-select').addEventListener('change', function() {
+    const projectId = this.value;
+    const testcaseSelect = document.getElementById('testcase-select');
+    
+    if (projectId) {
+        fetch(`/seminar1/task3_advanced/get_testcases?project_id=${projectId}`)
+            .then(response => response.json())
+            .then(data => {
+                testcaseSelect.innerHTML = '<option value="">Не связан с тест-кейсом</option>';
+                data.testcases.forEach(tc => {
+                    testcaseSelect.innerHTML += `<option value="${tc.id}">${tc.name}</option>`;
+                });
+            });
+    }
+});
+</script>
+{% endblock %}

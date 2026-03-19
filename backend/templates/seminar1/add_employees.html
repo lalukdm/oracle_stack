@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Добавление сотрудника{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="add-form-container">
+    <h1>Добавление нового сотрудника</h1>
+
+    {% if error %}
+    <div class="error-message" style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <p style="color: #721c24;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <form method="post" class="add-form">
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Имя *</label>
+                <input type="text" name="first_name" required class="form-control" 
+                       value="{{ request.form.first_name or '' }}">
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Фамилия *</label>
+                <input type="text" name="last_name" required class="form-control" 
+                       value="{{ request.form.last_name or '' }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Должность *</label>
+            <input type="text" name="position" required class="form-control" 
+                   value="{{ request.form.position or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Отдел *</label>
+            <select name="department" required class="form-control">
+                <option value="TESTING" {% if request.form.department == 'TESTING' or not request.form.department %}selected{% endif %}>Тестирование</option>
+                <option value="ANALYSIS" {% if request.form.department == 'ANALYSIS' %}selected{% endif %}>Аналитика</option>
+                <option value="MANAGEMENT" {% if request.form.department == 'MANAGEMENT' %}selected{% endif %}>Управление</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Email *</label>
+            <input type="email" name="email" required class="form-control" 
+                   value="{{ request.form.email or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Телефон</label>
+            <input type="text" name="phone" class="form-control" 
+                   value="{{ request.form.phone or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Руководитель</label>
+            <select name="manager_id" class="form-control">
+                <option value="">Нет руководителя</option>
+                {% for emp in employees %}
+                <option value="{{ emp[0] }}" {% if request.form.manager_id == emp[0]|string %}selected{% endif %}>
+                    {{ emp[1] }} {{ emp[2] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="asu-btn-success">Сохранить</button>
+            <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

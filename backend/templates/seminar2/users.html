@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Управление пользователями Oracle{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/seminar2.css') }}">
+<style>
+    .sql-code {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        overflow-x: auto;
+    }
+    .command {
+        background: #34495e;
+        color: #3498db;
+        padding: 5px 10px;
+        border-radius: 3px;
+        font-weight: bold;
+    }
+    .note {
+        background: #f1c40f;
+        color: #2c3e50;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1>Управление пользователями, привилегиями и ролями в Oracle</h1>
+    <p class="date">Дата выполнения: 2026-03-07</p>
+    <p class="date">Студент: Лялюк Д.М.</p>
+
+    <div class="info">
+        <strong>Задание:</strong> Управление профилями пользователей с правами DBA. 
+        Создание пользователей, назначение привилегий и ролей.
+    </div>
+
+    <h2>1. Создание пользователей (CREATE USER)</h2>
+    
+    <h3>Пример 1: Простой пользователь</h3>
+    <div class="sql-code">
+CREATE USER asu_user1 IDENTIFIED BY asu123
+DEFAULT TABLESPACE USERS
+TEMPORARY TABLESPACE TEMP
+QUOTA 10M ON USERS
+ACCOUNT UNLOCK;
+    </div>
+
+    <h3>Пример 2: Пользователь с неограниченными квотами (как в методичке)</h3>
+    <div class="sql-code">
+CREATE USER asu_test IDENTIFIED BY test123
+PROFILE DEFAULT
+DEFAULT TABLESPACE USERS
+QUOTA UNLIMITED ON USERS
+QUOTA UNLIMITED ON SYSTEM
+QUOTA UNLIMITED ON TEMP
+ACCOUNT UNLOCK;
+    </div>
+
+    <h3>Пример 3: Административный пользователь</h3>
+    <div class="sql-code">
+CREATE USER asu_admin IDENTIFIED BY admin123
+DEFAULT TABLESPACE USERS
+TEMPORARY TABLESPACE TEMP
+QUOTA UNLIMITED ON USERS
+PROFILE DEFAULT
+ACCOUNT UNLOCK;
+    </div>
+
+    <h2>2. Назначение привилегий (GRANT)</h2>
+    
+    <h3>2.1. Системные привилегии</h3>
+    <div class="sql-code">
+GRANT CREATE SESSION TO asu_user1;
+GRANT CREATE TABLE TO asu_user1;
+GRANT CREATE VIEW TO asu_user1;
+GRANT CREATE SEQUENCE TO asu_user1;
+GRANT CREATE PROCEDURE TO asu_user1;
+GRANT CREATE TRIGGER TO asu_user1;
+    </div>
+
+    <h3>2.2. Назначение ролей</h3>
+    <div class="sql-code">
+GRANT CONNECT TO asu_test;
+GRANT RESOURCE TO asu_test;
+GRANT DBA TO asu_admin;
+    </div>
+
+    <h2>3. Проверка привилегий</h2>
+    
+    <h3>3.1. Системные привилегии</h3>
+    <div class="sql-code">
+SELECT GRANTEE, PRIVILEGE, ADMIN_OPTION
+FROM DBA_SYS_PRIVS
+WHERE GRANTEE IN ('ASU_USER1', 'ASU_TEST', 'ASU_ADMIN')
+ORDER BY GRANTEE, PRIVILEGE;
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>GRANTEE</th><th>PRIVILEGE</th><th>ADMIN_OPTION</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>ASU_ADMIN</td><td>CREATE SESSION</td><td>NO</td></tr>
+            <tr><td>ASU_ADMIN</td><td>DBA</td><td>NO</td></tr>
+            <tr><td>ASU_TEST</td><td>CONNECT</td><td>NO</td></tr>
+            <tr><td>ASU_TEST</td><td>RESOURCE</td><td>NO</td></tr>
+            <tr><td>ASU_USER1</td><td>CREATE PROCEDURE</td><td>NO</td></tr>
+            <tr><td>ASU_USER1</td><td>CREATE SEQUENCE</td><td>NO</td></tr>
+            <tr><td>ASU_USER1</td><td>CREATE SESSION</td><td>NO</td></tr>
+            <tr><td>ASU_USER1</td><td>CREATE TABLE</td><td>NO</td></tr>
+            <tr><td>ASU_USER1</td><td>CREATE TRIGGER</td><td>NO</td></tr>
+            <tr><td>ASU_USER1</td><td>CREATE VIEW</td><td>NO</td></tr>
+        </tbody>
+    </table>
+
+    <h3>3.2. Роли пользователей</h3>
+    <div class="sql-code">
+SELECT GRANTEE, GRANTED_ROLE, ADMIN_OPTION, DEFAULT_ROLE
+FROM DBA_ROLE_PRIVS
+WHERE GRANTEE IN ('ASU_USER1', 'ASU_TEST', 'ASU_ADMIN')
+ORDER BY GRANTEE, GRANTED_ROLE;
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>GRANTEE</th><th>GRANTED_ROLE</th><th>ADMIN_OPTION</th><th>DEFAULT_ROLE</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>ASU_ADMIN</td><td>DBA</td><td>NO</td><td>YES</td></tr>
+            <tr><td>ASU_TEST</td><td>CONNECT</td><td>NO</td><td>YES</td></tr>
+            <tr><td>ASU_TEST</td><td>RESOURCE</td><td>NO</td><td>YES</td></tr>
+        </tbody>
+    </table>
+
+    <h2>4. Создание и управление ролями</h2>
+    
+    <h3>4.1. Создание пользовательских ролей</h3>
+    <div class="sql-code">
+CREATE ROLE asu_developer_role NOT IDENTIFIED;
+CREATE ROLE asu_analyst_role IDENTIFIED BY analyst123;
+CREATE ROLE asu_manager_role;
+    </div>
+
+    <h3>4.2. Назначение привилегий ролям</h3>
+    <div class="sql-code">
+-- Для разработчиков
+GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE SEQUENCE, CREATE PROCEDURE TO asu_developer_role;
+GRANT SELECT ANY TABLE TO asu_developer_role;
+
+-- Для аналитиков
+GRANT CREATE SESSION TO asu_analyst_role;
+GRANT SELECT ANY TABLE TO asu_analyst_role;
+
+-- Для менеджеров
+GRANT CREATE SESSION TO asu_manager_role;
+GRANT SELECT ANY TABLE, INSERT ANY TABLE, UPDATE ANY TABLE, DELETE ANY TABLE TO asu_manager_role;
+    </div>
+
+    <h3>4.3. Назначение ролей пользователям</h3>
+    <div class="sql-code">
+GRANT asu_developer_role TO asu_user1;
+GRANT asu_analyst_role TO asu_test;
+GRANT asu_manager_role TO asu_admin;
+    </div>
+
+    <h2>5. Изменение пользователей (ALTER USER)</h2>
+    
+    <h3>5.1. Смена пароля</h3>
+    <div class="sql-code">
+ALTER USER asu_user1 IDENTIFIED BY newpass123;
+    </div>
+
+    <h3>5.2. Блокировка/разблокировка</h3>
+    <div class="sql-code">
+ALTER USER asu_test ACCOUNT LOCK;
+ALTER USER asu_test ACCOUNT UNLOCK;
+    </div>
+
+    <h3>5.3. Изменение квот</h3>
+    <div class="sql-code">
+ALTER USER asu_user1 QUOTA 20M ON USERS;
+    </div>
+
+    <h2>6. Информация о пользователях</h2>
+    <div class="sql-code">
+SELECT USERNAME, ACCOUNT_STATUS, DEFAULT_TABLESPACE, TEMPORARY_TABLESPACE, CREATED
+FROM DBA_USERS
+WHERE USERNAME IN ('ASU_USER1', 'ASU_TEST', 'ASU_ADMIN')
+ORDER BY USERNAME;
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>USERNAME</th><th>ACCOUNT_STATUS</th><th>DEFAULT_TABLESPACE</th><th>TEMPORARY_TABLESPACE</th><th>CREATED</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>ASU_ADMIN</td><td>OPEN</td><td>USERS</td><td>TEMP</td><td>07-MAR-26</td></tr>
+            <tr><td>ASU_TEST</td><td>OPEN</td><td>USERS</td><td>TEMP</td><td>07-MAR-26</td></tr>
+            <tr><td>ASU_USER1</td><td>OPEN</td><td>USERS</td><td>TEMP</td><td>07-MAR-26</td></tr>
+        </tbody>
+    </table>
+
+    <div class="info">
+        <strong>Вывод:</strong> Успешно созданы 3 пользователя и 3 роли, 
+        назначены необходимые системные привилегии и роли. Все операции выполнены 
+        с правами DBA в соответствии с заданием.
+    </div>
+</div>
+{% endblock %}

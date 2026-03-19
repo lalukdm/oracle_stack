@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Настройка базы данных АСУ{% endblock %}
+
+{% block content %}
+<style>
+    .setup-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .setup-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .setup-header h1 {
+        color: #2c3e50;
+    }
+    .setup-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    .setup-btn {
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        background-color: #3498db;
+        color: white;
+    }
+    .setup-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .setup-btn.danger {
+        background-color: #e74c3c;
+    }
+    .setup-btn.success {
+        background-color: #27ae60;
+    }
+    .setup-btn.warning {
+        background-color: #f39c12;
+    }
+    .setup-btn.info {
+        background-color: #00bcd4;
+    }
+    .result-box {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .result-box h3 {
+        margin-top: 0;
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+    }
+    .result-item {
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+    .result-item.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .result-item.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .result-item.info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    .error-box {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+        color: #721c24;
+    }
+    .warning-box {
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #856404;
+    }
+</style>
+
+<div class="setup-container">
+    <div class="setup-header">
+        <h1>🔧 Настройка базы данных АСУ</h1>
+        <p>Используйте кнопки ниже для создания и настройки базы данных</p>
+    </div>
+
+    <div class="warning-box">
+        <strong>⚠️ Важно!</strong> Выполняйте действия по порядку. 
+        Для создания пользователя нужно подключение с правами администратора.
+    </div>
+
+    <form method="post">
+        <div class="setup-buttons">
+            <button type="submit" name="action" value="create_user" class="setup-btn info">
+                1. Создать пользователя ASUTP
+            </button>
+            <button type="submit" name="action" value="create_tables" class="setup-btn">
+                2. Создать таблицы
+            </button>
+            <button type="submit" name="action" value="create_sequences" class="setup-btn warning">
+                3. Создать последовательности
+            </button>
+            <button type="submit" name="action" value="create_indexes" class="setup-btn info">
+                4. Создать индексы
+            </button>
+            <button type="submit" name="action" value="insert_test_data" class="setup-btn success">
+                5. Добавить тестовые данные
+            </button>
+            <button type="submit" name="action" value="check_status" class="setup-btn">
+                Проверить статус
+            </button>
+        </div>
+    </form>
+
+    {% if result %}
+    <div class="result-box">
+        <h3>Результат выполнения:</h3>
+        {% for item in result %}
+            <div class="result-item 
+                {% if '✅' in item %}success
+                {% elif '❌' in item %}error
+                {% else %}info{% endif %}">
+                {{ item }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="error-box">
+        <strong>❌ Ошибка:</strong>
+        <pre>{{ error }}</pre>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="/seminar1/task3_advanced" class="asu-btn-success" style="padding: 10px 20px; text-decoration: none;">
+            Перейти к АСУ
+        </a>
+        <a href="/seminar1/task3_test" class="asu-btn-secondary" style="padding: 10px 20px; text-decoration: none; margin-left: 10px;">
+            Тест подключения
+        </a>
+    </div>
+</div>
+<a href="/seminar1/task3_add_15_records" class="setup-btn success" style="display: inline-block; text-decoration: none; margin-top: 10px;">
+    📊 Добавить по 15 записей
+</a>
+{% endblock %}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отчет о конфигурации БД Oracle XE</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; background: #ecf0f1; padding: 10px; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th { background: #3498db; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        tr:hover { background: #f5f5f5; }
+        .info { background: #e8f4f8; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0; }
+        .date { color: #7f8c8d; font-size: 0.9em; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>📊 Отчет о конфигурации базы данных Oracle XE</h1>
+    <p class="date">Дата создания: 2026-03-07</p>
+    <p class="date">Студент: ____________________ (ФИО)</p>
+    
+    <div class="info">
+        <strong>Информация о подключении:</strong><br>
+        База данных: XE<br>
+        Версия: Oracle Database 11g Express Edition Release 11.2.0.2.0<br>
+        Хост: 7e043b06869d
+    </div>
+
+    <h2>1. Common Options (Опции БД)</h2>
+    <table>
+        <tr><th>Option Name</th><th>Selected</th></tr>
+        <tr><td>Example Schemas</td><td>true (HR схема присутствует)</td></tr>
+        <tr><td>Oracle Data Mining</td><td>true</td></tr>
+        <tr><td>Oracle Intermedia</td><td>false</td></tr>
+        <tr><td>Oracle JVM</td><td>true</td></tr>
+        <tr><td>Oracle Label Security</td><td>false</td></tr>
+        <tr><td>Oracle OLAP</td><td>true</td></tr>
+        <tr><td>Oracle Spatial</td><td>false</td></tr>
+        <tr><td>Oracle Text</td><td>true</td></tr>
+        <tr><td>Oracle Ultra Search</td><td>false</td></tr>
+        <tr><td>Oracle XML DB</td><td>true</td></tr>
+    </table>
+
+    <h2>2. Initialization Parameters</h2>
+    <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>DB_NAME</td><td>XE</td></tr>
+        <tr><td>DB_BLOCK_SIZE</td><td>8192</td></tr>
+        <tr><td>COMPATIBLE</td><td>11.2.0.0.0</td></tr>
+        <tr><td>PROCESSES</td><td>100</td></tr>
+        <tr><td>UNDO_TABLESPACE</td><td>UNDOTBS1</td></tr>
+        <tr><td>CONTROL_FILES</td><td>/u01/app/oracle/oradata/XE/control.dbf</td></tr>
+    </table>
+
+    <h2>3. Character Sets</h2>
+    <table>
+        <tr><th>Name</th><th>Value</th></tr>
+        <tr><td>Database Character Set</td><td>AL32UTF8</td></tr>
+        <tr><td>National Character Set</td><td>AL16UTF16</td></tr>
+    </table>
+
+    <h2>4. Tablespaces</h2>
+    <table>
+        <tr><th>Name</th><th>Status</th><th>Type</th></tr>
+    </table>
+
+    <h2>5. Data Files</h2>
+    <table>
+        <tr><th>Tablespace</th><th>File</th><th>Size MB</th></tr>
+    </table>
+
+    <h2>6. Redo Log Groups</h2>
+    <table>
+        <tr><th>Group</th><th>Size KB</th><th>Status</th></tr>
+    </table>
+
+    <h2>7. SQL Скрипт создания БД (аналог примера)</h2>
+    <pre>
+CREATE DATABASE XE
+MAXINSTANCES 1
+MAXLOGHISTORY 1
+MAXLOGFILES 5
+MAXLOGMEMBERS 3
+MAXDATAFILES 100
+DATAFILE '/u01/app/oracle/oradata/XE/system.dbf' SIZE 360M REUSE AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED
+EXTENT MANAGEMENT LOCAL
+DEFAULT TEMPORARY TABLESPACE TEMP
+TEMPFILE '/u01/app/oracle/oradata/XE/temp.dbf' SIZE 20M REUSE AUTOEXTEND ON NEXT 5M MAXSIZE UNLIMITED
+UNDO TABLESPACE "UNDOTBS1" DATAFILE '/u01/app/oracle/oradata/XE/undotbs1.dbf' SIZE 25M REUSE AUTOEXTEND ON NEXT 5M MAXSIZE UNLIMITED
+CHARACTER SET AL32UTF8
+NATIONAL CHARACTER SET UTF8
+LOGFILE GROUP 1 ('/u01/app/oracle/oradata/XE/redo01.log') SIZE 50M,
+        GROUP 2 ('/u01/app/oracle/oradata/XE/redo02.log') SIZE 50M,
+        GROUP 3 ('/u01/app/oracle/oradata/XE/redo03.log') SIZE 50M;
+    </pre>
+
+    <div class="info">
+        <strong>Примечание:</strong> Отчет создан на основе реальной конфигурации Oracle XE.
+        Параметры могут отличаться от примера satskov, но структура отчета соответствует требованиям.
+    </div>
+</body>
+</html>

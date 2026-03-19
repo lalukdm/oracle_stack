@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование клиента{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="add-form-container">
+    <h1>Редактирование клиента</h1>
+
+    {% if error %}
+    <div class="error-message" style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <p style="color: #721c24;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    {% if record %}
+    <form method="post" class="add-form">
+        <div class="form-group">
+            <label>Название компании *</label>
+            <input type="text" name="client_name" required class="form-control" 
+                   value="{{ record[1] or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Контактное лицо</label>
+            <input type="text" name="contact_person" class="form-control" 
+                   value="{{ record[2] or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Телефон</label>
+            <input type="text" name="phone" class="form-control" 
+                   value="{{ record[3] or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" 
+                   value="{{ record[4] or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Приоритет (1-5)</label>
+            <select name="priority" class="form-control">
+                <option value="1" {% if record[5] == 1 %}selected{% endif %}>1 - Высокий</option>
+                <option value="2" {% if record[5] == 2 %}selected{% endif %}>2</option>
+                <option value="3" {% if record[5] == 3 %}selected{% endif %}>3 - Средний</option>
+                <option value="4" {% if record[5] == 4 %}selected{% endif %}>4</option>
+                <option value="5" {% if record[5] == 5 %}selected{% endif %}>5 - Низкий</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Ответственный сотрудник</label>
+            <select name="responsible" class="form-control">
+                <option value="">Не назначен</option>
+                {% for emp in employees %}
+                <option value="{{ emp[0] }}" {% if record[6] == emp[0] %}selected{% endif %}>
+                    {{ emp[1] }} {{ emp[2] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="asu-btn-success">Сохранить</button>
+            <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Отмена</a>
+        </div>
+    </form>
+    {% else %}
+    <p>Клиент не найден</p>
+    <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Вернуться</a>
+    {% endif %}
+</div>
+{% endblock %}

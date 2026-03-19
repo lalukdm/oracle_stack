@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр проекта{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="view-container">
+    <h1>Карточка проекта</h1>
+
+    {% if record %}
+    <div class="view-card">
+        <div class="view-header">
+            <h2>{{ record[1] }}</h2>
+            <div class="view-actions">
+                <a href="/seminar1/task3_advanced/edit/projects/{{ record[0] }}" class="asu-btn-primary">Редактировать</a>
+                <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Назад</a>
+            </div>
+        </div>
+
+        <div class="view-section">
+            <h3>Основная информация</h3>
+            <table class="view-table">
+                <tr>
+                    <th>ID:</th>
+                    <td>{{ record[0] }}</td>
+                </tr>
+                <tr>
+                    <th>Название проекта:</th>
+                    <td>{{ record[1] }}</td>
+                </tr>
+                <tr>
+                    <th>Клиент:</th>
+                    <td>{{ record[2] or 'Нет клиента' }}</td>
+                </tr>
+                <tr>
+                    <th>Описание:</th>
+                    <td>{{ record[3] or 'Нет описания' }}</td>
+                </tr>
+                <tr>
+                    <th>Статус:</th>
+                    <td>
+                        {% if record[4] == 'ACTIVE' %}
+                            <span class="badge-success">Активен</span>
+                        {% elif record[4] == 'ON_HOLD' %}
+                            <span class="badge-warning">Приостановлен</span>
+                        {% elif record[4] == 'COMPLETED' %}
+                            <span class="badge-secondary">Завершен</span>
+                        {% elif record[4] == 'CANCELLED' %}
+                            <span class="badge-danger">Отменен</span>
+                        {% else %}
+                            {{ record[4] }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Приоритет:</th>
+                    <td>{{ record[5] }}/5</td>
+                </tr>
+                <tr>
+                    <th>Дата начала:</th>
+                    <td>{{ record[6] }}</td>
+                </tr>
+                <tr>
+                    <th>Дата завершения:</th>
+                    <td>{{ record[7] or 'Не указана' }}</td>
+                </tr>
+                <tr>
+                    <th>Руководитель:</th>
+                    <td>{{ record[8] or 'Не назначен' }}</td>
+                </tr>
+                <tr>
+                    <th>Планов тестирования:</th>
+                    <td>{{ record[9] }}</td>
+                </tr>
+                <tr>
+                    <th>Тест-кейсов:</th>
+                    <td>{{ record[10] }}</td>
+                </tr>
+                <tr>
+                    <th>Всего дефектов:</th>
+                    <td>{{ record[11] }}</td>
+                </tr>
+                <tr>
+                    <th>Открытых дефектов:</th>
+                    <td class="{% if record[12] > 0 %}text-danger{% endif %}">{{ record[12] }}</td>
+                </tr>
+            </table>
+        </div>
+
+        {% if plans %}
+        <div class="view-section">
+            <h3>Планы тестирования</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Версия</th>
+                        <th>Статус</th>
+                        <th>Дата релиза</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td>{{ plan[0] }}</td>
+                        <td>{{ plan[1] }}</td>
+                        <td>{{ plan[2] }}</td>
+                        <td>
+                            {% if plan[3] == 'PLANNED' %}
+                                <span class="badge-secondary">Запланирован</span>
+                            {% elif plan[3] == 'IN_PROGRESS' %}
+                                <span class="badge-warning">В работе</span>
+                            {% elif plan[3] == 'COMPLETED' %}
+                                <span class="badge-success">Завершен</span>
+                            {% else %}
+                                {{ plan[3] }}
+                            {% endif %}
+                        </td>
+                        <td>{{ plan[4] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if testcases %}
+        <div class="view-section">
+            <h3>Тест-кейсы</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Приоритет</th>
+                        <th>Статус</th>
+                        <th>Дефектов</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tc in testcases %}
+                    <tr>
+                        <td>{{ tc[0] }}</td>
+                        <td>{{ tc[1] }}</td>
+                        <td>{{ tc[2] }}/5</td>
+                        <td>
+                            {% if tc[3] == 'ACTIVE' %}
+                                <span class="badge-success">Активен</span>
+                            {% elif tc[3] == 'DRAFT' %}
+                                <span class="badge-secondary">Черновик</span>
+                            {% else %}
+                                <span class="badge-warning">{{ tc[3] }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ tc[4] }}</td>
+                        <td>
+                            <a href="/seminar1/task3_advanced/view/testcases/{{ tc[0] }}" class="btn-view">👁️</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <p>Проект не найден</p>
+    <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Вернуться</a>
+    {% endif %}
+</div>
+
+<style>
+.text-danger {
+    color: #e74c3c;
+    font-weight: bold;
+}
+.view-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+}
+.view-header h2 {
+    margin: 0;
+    color: #2c3e50;
+}
+.view-actions {
+    display: flex;
+    gap: 10px;
+}
+.view-section {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.view-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #2c3e50;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 10px;
+}
+.view-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.view-table th {
+    width: 200px;
+    text-align: left;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: normal;
+    color: #7f8c8d;
+}
+.view-table td {
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+    color: #2c3e50;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.data-table th {
+    background-color: #34495e;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+.data-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #ecf0f1;
+}
+.data-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

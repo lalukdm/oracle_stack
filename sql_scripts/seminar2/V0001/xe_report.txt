@@ -1,0 +1,90 @@
+======================================================================
+ИНФОРМАЦИЯ О БАЗЕ ДАННЫХ ORACLE XE
+======================================================================
+
+1. Common Options
+----------------------------------------------------------- SELECT 'Example Schemas' as "Option Name",
+SP2-0734: unknown command beginning "DECODE((SE..." - rest of line ignored.
+
+Option Name        Sele                                                                                                                                                                                 
+------------------ ----                                                                                                                                                                                 
+Oracle Data Mining true                                                                                                                                                                                 
+
+Option Name       Selec                                                                                                                                                                                 
+----------------- -----                                                                                                                                                                                 
+Oracle Intermedia false                                                                                                                                                                                 
+
+Option Nam Sele                                                                                                                                                                                         
+---------- ----                                                                                                                                                                                         
+Oracle JVM true                                                                                                                                                                                         
+
+Option Name           Selec                                                                                                                                                                             
+--------------------- -----                                                                                                                                                                             
+Oracle Label Security false                                                                                                                                                                             
+
+Option Name Sele                                                                                                                                                                                        
+----------- ----                                                                                                                                                                                        
+Oracle OLAP true                                                                                                                                                                                        
+
+Option Name    Selec                                                                                                                                                                                    
+-------------- -----                                                                                                                                                                                    
+Oracle Spatial false                                                                                                                                                                                    
+
+Option Name Sele                                                                                                                                                                                        
+----------- ----                                                                                                                                                                                        
+Oracle Text true                                                                                                                                                                                        
+
+Option Name         Selec                                                                                                                                                                               
+------------------- -----                                                                                                                                                                               
+Oracle Ultra Search false                                                                                                                                                                               
+
+Option Name   Sele                                                                                                                                                                                      
+------------- ----                                                                                                                                                                                      
+Oracle XML DB true                                                                                                                                                                                      
+
+2. Initialization Parameters
+----------------------------------------------------------- SELECT 'DB_NAME' as "Parameter", value as "Value" FROM v$parameter WHERE name='db_name' UNION ALL
+
+'DB_BLOCK_SIZE'                                                                                                                                                                                         
+---------------                                                                                                                                                                                         
+VALUE                                                                                                                                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DB_BLOCK_SIZE                                                                                                                                                                                           
+8192                                                                                                                                                                                                    
+                                                                                                                                                                                                        
+COMPATIBLE                                                                                                                                                                                              
+11.2.0.0.0                                                                                                                                                                                              
+                                                                                                                                                                                                        
+PROCESSES                                                                                                                                                                                               
+100                                                                                                                                                                                                     
+                                                                                                                                                                                                        
+UNDO_TABLESPACE                                                                                                                                                                                         
+UNDOTBS1                                                                                                                                                                                                
+                                                                                                                                                                                                        
+CONTROL_FILES                                                                                                                                                                                           
+/u01/app/oracle/oradata/XE/control.dbf                                                                                                                                                                  
+                                                                                                                                                                                                        
+
+3. Character Sets
+----------------------------------------------------------- SELECT 'Database Character Set' as "Name", value as "Value" FROM nls_database_parameters WHERE parameter='NLS_CHARACTERSET'
+SP2-0042: unknown command "UNION ALL" - rest of line ignored.
+
+'NATIONALCHARACTERSET' VALUE                                                                                                                                                                            
+---------------------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------                 
+National Character Set AL16UTF16                                                                                                                                                                        
+
+4. Control Files
+----------------------------------------------------------- SELECT name as "Control File" FROM v$controlfile
+
+5. Tablespaces
+----------------------------------------------------------- SELECT tablespace_name as "Name", status, contents as "Type" FROM dba_tablespaces ORDER BY tablespace_name
+
+6. Data Files
+----------------------------------------------------------- SELECT tablespace_name as "Tablespace", file_name as "File", bytes/1024/1024 as "Size MB" FROM dba_data_files ORDER BY tablespace_name
+
+7. Redo Log Groups
+----------------------------------------------------------- SELECT group# as "Group", bytes/1024 as "Size KB", status FROM v$log ORDER BY group#
+
+======================================================================
+ОТЧЕТ ЗАВЕРШЕН
+======================================================================

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование тест-кейса{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="add-form-container">
+    <h1>Редактирование тест-кейса</h1>
+
+    {% if error %}
+    <div class="error-message" style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <p style="color: #721c24;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    {% if record %}
+    <form method="post" class="add-form">
+        <div class="form-group">
+            <label>Название тест-кейса *</label>
+            <input type="text" name="testcase_name" required class="form-control" 
+                   value="{{ record[1] or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Проект</label>
+            <select name="project_id" class="form-control" id="project-select">
+                <option value="">Выберите проект</option>
+                {% for proj in projects %}
+                <option value="{{ proj[0] }}" {% if record[2] == proj[0] %}selected{% endif %}>
+                    {{ proj[1] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>План тестирования</label>
+            <select name="plan_id" class="form-control" id="plan-select">
+                <option value="">Не привязан к плану</option>
+                {% for plan in plans %}
+                <option value="{{ plan[0] }}" {% if record[3] == plan[0] %}selected{% endif %}>
+                    {{ plan[1] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Описание</label>
+            <textarea name="description" class="form-control" rows="3">{{ record[4] or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Шаги выполнения</label>
+            <textarea name="steps" class="form-control" rows="4">{{ record[5] or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Ожидаемый результат</label>
+            <textarea name="expected_result" class="form-control" rows="3">{{ record[6] or '' }}</textarea>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Приоритет</label>
+                <select name="priority" class="form-control">
+                    <option value="1" {% if record[7] == 1 %}selected{% endif %}>1 - Критический</option>
+                    <option value="2" {% if record[7] == 2 %}selected{% endif %}>2 - Высокий</option>
+                    <option value="3" {% if record[7] == 3 %}selected{% endif %}>3 - Средний</option>
+                    <option value="4" {% if record[7] == 4 %}selected{% endif %}>4 - Низкий</option>
+                    <option value="5" {% if record[7] == 5 %}selected{% endif %}>5 - Незначительный</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Статус</label>
+                <select name="status" class="form-control">
+                    <option value="DRAFT" {% if record[8] == 'DRAFT' %}selected{% endif %}>Черновик</option>
+                    <option value="ACTIVE" {% if record[8] == 'ACTIVE' %}selected{% endif %}>Активен</option>
+                    <option value="DEPRECATED" {% if record[8] == 'DEPRECATED' %}selected{% endif %}>Устаревший</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Автор</label>
+            <select name="author_id" class="form-control">
+                <option value="">Выберите автора</option>
+                {% for emp in employees %}
+                <option value="{{ emp[0] }}" {% if record[9] == emp[0] %}selected{% endif %}>
+                    {{ emp[1] }} {{ emp[2] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="asu-btn-success">Сохранить</button>
+            <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Отмена</a>
+        </div>
+    </form>
+    {% else %}
+    <p>Тест-кейс не найден</p>
+    <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Вернуться</a>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('project-select').addEventListener('change', function() {
+    const projectId = this.value;
+    const planSelect = document.getElementById('plan-select');
+    
+    if (projectId) {
+        fetch(`/seminar1/task3_advanced/get_plans?project_id=${projectId}`)
+            .then(response => response.json())
+            .then(data => {
+                planSelect.innerHTML = '<option value="">Не привязан к плану</option>';
+                data.plans.forEach(plan => {
+                    const selected = plan.id == {{ record[3] if record and record[3] else 'null' }} ? 'selected' : '';
+                    planSelect.innerHTML += `<option value="${plan.id}" ${selected}>${plan.name}</option>`;
+                });
+            });
+    }
+});
+</script>
+{% endblock %}

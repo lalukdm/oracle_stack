@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Добавление тест-кейса{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="add-form-container">
+    <h1>Добавление нового тест-кейса</h1>
+
+    {% if error %}
+    <div class="error-message" style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <p style="color: #721c24;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <form method="post" class="add-form">
+        <div class="form-group">
+            <label>Название тест-кейса *</label>
+            <input type="text" name="testcase_name" required class="form-control" 
+                   value="{{ request.form.testcase_name or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Проект</label>
+            <select name="project_id" class="form-control" id="project-select">
+                <option value="">Выберите проект</option>
+                {% for proj in projects %}
+                <option value="{{ proj[0] }}" {% if request.form.project_id == proj[0]|string %}selected{% endif %}>
+                    {{ proj[1] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>План тестирования</label>
+            <select name="plan_id" class="form-control">
+                <option value="">Не привязан к плану</option>
+                {% for plan in plans %}
+                <option value="{{ plan[0] }}" {% if request.form.plan_id == plan[0]|string %}selected{% endif %}>
+                    {{ plan[1] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Описание</label>
+            <textarea name="description" class="form-control" rows="3">{{ request.form.description or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Шаги выполнения</label>
+            <textarea name="steps" class="form-control" rows="4" placeholder="1. Первый шаг&#10;2. Второй шаг&#10;3. Третий шаг">{{ request.form.steps or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Ожидаемый результат</label>
+            <textarea name="expected_result" class="form-control" rows="3">{{ request.form.expected_result or '' }}</textarea>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Приоритет</label>
+                <select name="priority" class="form-control">
+                    <option value="1" {% if request.form.priority == '1' %}selected{% endif %}>1 - Критический</option>
+                    <option value="2" {% if request.form.priority == '2' %}selected{% endif %}>2 - Высокий</option>
+                    <option value="3" {% if not request.form.priority or request.form.priority == '3' %}selected{% endif %}>3 - Средний</option>
+                    <option value="4" {% if request.form.priority == '4' %}selected{% endif %}>4 - Низкий</option>
+                    <option value="5" {% if request.form.priority == '5' %}selected{% endif %}>5 - Незначительный</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Автор</label>
+                <select name="author_id" class="form-control">
+                    <option value="">Выберите автора</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp[0] }}" {% if request.form.author_id == emp[0]|string %}selected{% endif %}>
+                        {{ emp[1] }} {{ emp[2] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="asu-btn-success">Сохранить</button>
+            <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('project-select').addEventListener('change', function() {
+    const projectId = this.value;
+    const planSelect = document.querySelector('select[name="plan_id"]');
+    
+    // Здесь можно добавить AJAX загрузку планов для выбранного проекта
+    if (projectId) {
+        fetch(`/seminar1/task3_advanced/get_plans?project_id=${projectId}`)
+            .then(response => response.json())
+            .then(data => {
+                planSelect.innerHTML = '<option value="">Не привязан к плану</option>';
+                data.plans.forEach(plan => {
+                    planSelect.innerHTML += `<option value="${plan.id}">${plan.name}</option>`;
+                });
+            });
+    }
+});
+</script>
+{% endblock %}

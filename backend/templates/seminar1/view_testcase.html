@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр тест-кейса{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="view-container">
+    <h1>Карточка тест-кейса</h1>
+
+    {% if record %}
+    <div class="view-card">
+        <div class="view-header">
+            <h2>{{ record[1] }}</h2>
+            <div class="view-actions">
+                <a href="/seminar1/task3_advanced/edit/testcases/{{ record[0] }}" class="asu-btn-primary">Редактировать</a>
+                <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Назад</a>
+            </div>
+        </div>
+
+        <div class="view-section">
+            <h3>Основная информация</h3>
+            <table class="view-table">
+                <tr>
+                    <th>ID:</th>
+                    <td>{{ record[0] }}</td>
+                </tr>
+                <tr>
+                    <th>Название:</th>
+                    <td>{{ record[1] }}</td>
+                </tr>
+                <tr>
+                    <th>Проект:</th>
+                    <td>{{ record[2] or 'Не указан' }}</td>
+                </tr>
+                <tr>
+                    <th>План тестирования:</th>
+                    <td>{{ record[3] or 'Не привязан' }}</td>
+                </tr>
+                <tr>
+                    <th>Приоритет:</th>
+                    <td>{{ record[7] }}/5</td>
+                </tr>
+                <tr>
+                    <th>Статус:</th>
+                    <td>
+                        {% if record[8] == 'ACTIVE' %}
+                            <span class="badge-success">Активен</span>
+                        {% elif record[8] == 'DRAFT' %}
+                            <span class="badge-secondary">Черновик</span>
+                        {% else %}
+                            <span class="badge-warning">{{ record[8] }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Автор:</th>
+                    <td>{{ record[9] or 'Неизвестен' }}</td>
+                </tr>
+                <tr>
+                    <th>Дата создания:</th>
+                    <td>{{ record[10] }}</td>
+                </tr>
+                <tr>
+                    <th>Дата изменения:</th>
+                    <td>{{ record[11] or 'Не изменялся' }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="view-section">
+            <h3>Описание</h3>
+            <div class="content-box">
+                {{ record[4] or 'Нет описания' }}
+            </div>
+        </div>
+
+        <div class="view-section">
+            <h3>Шаги выполнения</h3>
+            <div class="content-box steps-box">
+                {% if record[5] %}
+                    {% for step in record[5].split('\n') %}
+                        <div class="step">{{ step }}</div>
+                    {% endfor %}
+                {% else %}
+                    Нет описания шагов
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="view-section">
+            <h3>Ожидаемый результат</h3>
+            <div class="content-box expected-box">
+                {{ record[6] or 'Не указан' }}
+            </div>
+        </div>
+
+        {% if defects %}
+        <div class="view-section">
+            <h3>Связанные дефекты</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Серьезность</th>
+                        <th>Приоритет</th>
+                        <th>Статус</th>
+                        <th>Дата создания</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for defect in defects %}
+                    <tr>
+                        <td>{{ defect[0] }}</td>
+                        <td>{{ defect[1] }}</td>
+                        <td>
+                            {% if defect[2] == 'BLOCKER' %}
+                                <span class="badge-danger">BLOCKER</span>
+                            {% elif defect[2] == 'CRITICAL' %}
+                                <span class="badge-danger">CRITICAL</span>
+                            {% elif defect[2] == 'MAJOR' %}
+                                <span class="badge-warning">MAJOR</span>
+                            {% else %}
+                                <span class="badge-secondary">{{ defect[2] }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ defect[3] }}/5</td>
+                        <td>
+                            {% if defect[4] == 'OPEN' %}
+                                <span class="badge-danger">Открыт</span>
+                            {% elif defect[4] == 'IN_PROGRESS' %}
+                                <span class="badge-warning">В работе</span>
+                            {% elif defect[4] == 'FIXED' %}
+                                <span class="badge-success">Исправлен</span>
+                            {% else %}
+                                {{ defect[4] }}
+                            {% endif %}
+                        </td>
+                        <td>{{ defect[5] }}</td>
+                        <td>
+                            <a href="/seminar1/task3_advanced/view/bugs/{{ defect[0] }}" class="btn-view">👁️</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <p>Тест-кейс не найден</p>
+    <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Вернуться</a>
+    {% endif %}
+</div>
+
+<style>
+.view-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+}
+.view-header h2 {
+    margin: 0;
+    color: #2c3e50;
+}
+.view-actions {
+    display: flex;
+    gap: 10px;
+}
+.view-section {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.view-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #2c3e50;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 10px;
+}
+.view-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.view-table th {
+    width: 200px;
+    text-align: left;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: normal;
+    color: #7f8c8d;
+}
+.view-table td {
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+    color: #2c3e50;
+}
+.content-box {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    border-left: 3px solid #3498db;
+    white-space: pre-wrap;
+    font-family: monospace;
+}
+.steps-box {
+    background-color: #f8f9fa;
+}
+.step {
+    padding: 5px 0;
+    border-bottom: 1px dashed #dee2e6;
+}
+.step:last-child {
+    border-bottom: none;
+}
+.expected-box {
+    background-color: #e8f5e9;
+    border-left-color: #27ae60;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.data-table th {
+    background-color: #34495e;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+.data-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #ecf0f1;
+}
+</style>
+{% endblock %}

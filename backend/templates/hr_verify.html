@@ -1,0 +1,717 @@
+{% extends "base.html" %}
+
+{% block title %}Верификация HR схемы{% endblock %}
+
+{% block content %}
+<style>
+    .query-result-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        background: white;
+        border: 1px solid #ccc;
+    }
+    .query-result-table th {
+        background: #e0e0e0;
+        padding: 8px;
+        text-align: left;
+        font-weight: bold;
+        border-bottom: 2px solid #999;
+    }
+    .query-result-table td {
+        padding: 6px 8px;
+        border-bottom: 1px solid #ddd;
+    }
+    .query-result-table tr:hover {
+        background: #f5f5f5;
+    }
+    .null-value {
+        color: #999;
+        font-style: italic;
+    }
+    .sql-hint {
+        background: #f8f9fa;
+        padding: 5px 10px;
+        border-left: 3px solid #007bff;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        margin: 5px 0;
+    }
+</style>
+
+<div class="verify-box">
+    <h1>Верификация схемы HR</h1>
+    
+    {% if results.error_message %}
+    <div style="background: #f8d7da; padding: 15px; border: 1px solid #f5c6cb; border-radius: 3px;">
+        <strong>❌ Ошибка подключения:</strong> {{ results.error_message }}
+    </div>
+    {% else %}
+    
+    <!-- ===== ШАГ 1: Статус пользователя ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 1: Статус пользователя и схема</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT USERNAME, ACCOUNT_STATUS, EXPIRY_DATE, DEFAULT_TABLESPACE, TEMPORARY_TABLESPACE FROM DBA_USERS WHERE USERNAME = 'HR';
+        </div>
+        <div class="verify-result">
+            <strong>Результат:</strong>
+            {% if results.step1_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>USERNAME</th>
+                        <th>ACCOUNT_STATUS</th>
+                        <th>EXPIRY_DATE</th>
+                        <th>DEFAULT_TABLESPACE</th>
+                        <th>TEMPORARY_TABLESPACE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step1_result %}
+                    <tr>
+                        <td>{{ row.USERNAME }}</td>
+                        <td>
+                            {{ row.ACCOUNT_STATUS }}
+                            {% if 'OPEN' in row.ACCOUNT_STATUS %}
+                                <span style="color:green">✓</span>
+                            {% endif %}
+                        </td>
+                        <td>{% if row.EXPIRY_DATE != 'NULL' %}{{ row.EXPIRY_DATE }}{% else %}<span class="null-value">NULL</span>{% endif %}</td>
+                        <td>{{ row.DEFAULT_TABLESPACE }}</td>
+                        <td>{{ row.TEMPORARY_TABLESPACE }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет данных о пользователе HR</p>
+            {% endif %}
+        </div>
+        
+        <div class="sql-hint">
+            <strong>Роли HR:</strong> SELECT GRANTED_ROLE FROM DBA_ROLE_PRIVS WHERE GRANTEE = 'HR';
+        </div>
+        <div class="verify-result">
+            {% if results.step1_roles_result %}
+            <table class="query-result-table">
+                <thead><tr><th>GRANTED_ROLE</th></tr></thead>
+                <tbody>
+                    {% for row in results.step1_roles_result %}
+                    <tr><td>{{ row.GRANTED_ROLE }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет ролей у HR</p>
+            {% endif %}
+        </div>
+        
+        <div class="sql-hint">
+            <strong>Привилегии HR:</strong> SELECT PRIVILEGE FROM DBA_SYS_PRIVS WHERE GRANTEE = 'HR';
+        </div>
+        <div class="verify-result">
+            {% if results.step1_privs_result %}
+            <table class="query-result-table">
+                <thead><tr><th>PRIVILEGE</th></tr></thead>
+                <tbody>
+                    {% for row in results.step1_privs_result %}
+                    <tr><td>{{ row.PRIVILEGE }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет системных привилегий у HR</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Проверяем существование пользователя HR, его статус и права.
+        </div>
+    </div>
+    
+    <!-- ===== ШАГ 2: Проверка объектов схемы ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 2: Проверка объектов схемы</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT OBJECT_TYPE, COUNT(*) FROM DBA_OBJECTS WHERE OWNER = 'HR' GROUP BY OBJECT_TYPE ORDER BY OBJECT_TYPE;
+        </div>
+        <div class="verify-result">
+            {% if results.step2_objects_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>OBJECT_TYPE</th>
+                        <th>COUNT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step2_objects_result %}
+                    <tr>
+                        <td>{{ row.OBJECT_TYPE }}</td>
+                        <td>{{ row.COUNT }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет объектов в схеме HR</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT TABLE_NAME FROM DBA_TABLES WHERE OWNER = 'HR' ORDER BY TABLE_NAME;
+        </div>
+        <div class="verify-result">
+            <strong>Список таблиц ({{ results.step2_tables_result|length }} шт.):</strong>
+            {% if results.step2_tables_result %}
+            <table class="query-result-table">
+                <thead><tr><th>TABLE_NAME</th></tr></thead>
+                <tbody>
+                    {% for table in results.step2_tables_result %}
+                    <tr><td>{{ table }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет таблиц в схеме HR</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Смотрим, какие объекты есть в схеме.
+        </div>
+    </div>
+    
+    <!-- ===== ШАГ 3: Проверка структуры таблиц ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 3: Проверка структуры таблиц</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> DESC EMPLOYEES;
+        </div>
+        <div class="verify-result">
+            {% if results.step3_desc_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>COLUMN_NAME</th>
+                        <th>DATA_TYPE</th>
+                        <th>NULLABLE</th>
+                        <th>DATA_DEFAULT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step3_desc_result %}
+                    <tr>
+                        <td>{{ row.COLUMN_NAME }}</td>
+                        <td>{{ row.DATA_TYPE }}</td>
+                        <td>{{ row.NULLABLE }}</td>
+                        <td>{% if row.DATA_DEFAULT %}{{ row.DATA_DEFAULT }}{% else %}<span class="null-value">NULL</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет данных о структуре EMPLOYEES</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT CONSTRAINT_NAME, CONSTRAINT_TYPE, TABLE_NAME, STATUS FROM USER_CONSTRAINTS ORDER BY TABLE_NAME;
+        </div>
+        <div class="verify-result">
+            {% if results.step3_constraints_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>CONSTRAINT_NAME</th>
+                        <th>TYPE</th>
+                        <th>TABLE_NAME</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step3_constraints_result %}
+                    <tr>
+                        <td>{{ row.CONSTRAINT_NAME }}</td>
+                        <td>{{ row.TYPE }}</td>
+                        <td>{{ row.TABLE_NAME }}</td>
+                        <td>{{ row.STATUS }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет ограничений</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT a.table_name AS child_table, a.constraint_name AS fk_name, c_pk.table_name AS parent_table FROM user_constraints a JOIN user_constraints c_pk ON a.r_constraint_name = c_pk.constraint_name WHERE a.constraint_type = 'R';
+        </div>
+        <div class="verify-result">
+            {% if results.step3_fk_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>CHILD_TABLE</th>
+                        <th>FK_NAME</th>
+                        <th>PARENT_TABLE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step3_fk_result %}
+                    <tr>
+                        <td>{{ row.CHILD_TABLE }}</td>
+                        <td>{{ row.FK_NAME }}</td>
+                        <td>{{ row.PARENT_TABLE }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет внешних ключей</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Проверяем структуру таблиц и ограничения целостности.
+        </div>
+    </div>
+    
+    <!-- ===== ШАГ 4: Проверка наполнения данными ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 4: Проверка наполнения данными</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT 'REGIONS' AS TABLE_NAME, COUNT(*) AS ROWS_COUNT FROM REGIONS UNION ALL ...;
+        </div>
+        <div class="verify-result">
+            {% if results.step4_counts_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>TABLE_NAME</th>
+                        <th>ROWS_COUNT</th>
+                        <th>ЭТАЛОН</th>
+                        <th>СТАТУС</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step4_counts_result %}
+                    <tr>
+                        <td>{{ row.TABLE_NAME }}</td>
+                        <td>{{ row.ROWS_COUNT }}</td>
+                        <td>
+                            {% if row.TABLE_NAME == 'REGIONS' %}4
+                            {% elif row.TABLE_NAME == 'COUNTRIES' %}25
+                            {% elif row.TABLE_NAME == 'LOCATIONS' %}23
+                            {% elif row.TABLE_NAME == 'DEPARTMENTS' %}27
+                            {% elif row.TABLE_NAME == 'JOBS' %}19
+                            {% elif row.TABLE_NAME == 'EMPLOYEES' %}107
+                            {% elif row.TABLE_NAME == 'JOB_HISTORY' %}10
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.TABLE_NAME == 'REGIONS' and row.ROWS_COUNT == 4 %}
+                                <span style="color:green">✓</span>
+                            {% elif row.TABLE_NAME == 'COUNTRIES' and row.ROWS_COUNT == 25 %}
+                                <span style="color:green">✓</span>
+                            {% elif row.TABLE_NAME == 'LOCATIONS' and row.ROWS_COUNT == 23 %}
+                                <span style="color:green">✓</span>
+                            {% elif row.TABLE_NAME == 'DEPARTMENTS' and row.ROWS_COUNT == 27 %}
+                                <span style="color:green">✓</span>
+                            {% elif row.TABLE_NAME == 'JOBS' and row.ROWS_COUNT == 19 %}
+                                <span style="color:green">✓</span>
+                            {% elif row.TABLE_NAME == 'EMPLOYEES' and row.ROWS_COUNT == 107 %}
+                                <span style="color:green">✓</span>
+                            {% elif row.TABLE_NAME == 'JOB_HISTORY' and row.ROWS_COUNT == 10 %}
+                                <span style="color:green">✓</span>
+                            {% else %}
+                                <span style="color:red">✗</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет данных о количестве записей</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT MIN(HIRE_DATE), MAX(HIRE_DATE), MIN(SALARY), MAX(SALARY), AVG(SALARY) FROM EMPLOYEES;
+        </div>
+        <div class="verify-result">
+            {% if results.step4_stats_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>FIRST_HIRE</th>
+                        <th>LAST_HIRE</th>
+                        <th>MIN_SALARY</th>
+                        <th>MAX_SALARY</th>
+                        <th>AVG_SALARY</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ results.step4_stats_result.FIRST_HIRE }}</td>
+                        <td>{{ results.step4_stats_result.LAST_HIRE }}</td>
+                        <td>{{ results.step4_stats_result.MIN_SALARY }}</td>
+                        <td>{{ results.step4_stats_result.MAX_SALARY }}</td>
+                        <td>{{ results.step4_stats_result.AVG_SALARY }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет статистики</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Проверяем, что таблицы содержат эталонные данные.
+        </div>
+    </div>
+    
+    <!-- ===== ШАГ 5: Проверка индексов ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 5: Проверка индексов</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT INDEX_NAME, TABLE_NAME, UNIQUENESS, STATUS FROM DBA_INDEXES WHERE OWNER = 'HR' ORDER BY TABLE_NAME;
+        </div>
+        <div class="verify-result">
+            {% if results.step5_indexes_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>INDEX_NAME</th>
+                        <th>TABLE_NAME</th>
+                        <th>UNIQUENESS</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step5_indexes_result %}
+                    <tr>
+                        <td>{{ row.INDEX_NAME }}</td>
+                        <td>{{ row.TABLE_NAME }}</td>
+                        <td>{{ row.UNIQUENESS }}</td>
+                        <td>{{ row.STATUS }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет индексов</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT INDEX_NAME, COLUMN_NAME, COLUMN_POSITION FROM DBA_IND_COLUMNS WHERE INDEX_OWNER = 'HR' ORDER BY INDEX_NAME;
+        </div>
+        <div class="verify-result">
+            {% if results.step5_index_cols_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>INDEX_NAME</th>
+                        <th>COLUMN_NAME</th>
+                        <th>COLUMN_POSITION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step5_index_cols_result %}
+                    <tr>
+                        <td>{{ row.INDEX_NAME }}</td>
+                        <td>{{ row.COLUMN_NAME }}</td>
+                        <td>{{ row.COLUMN_POSITION }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет данных о столбцах индексов</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Проверяем наличие индексов.
+        </div>
+    </div>
+    
+    <!-- ===== ШАГ 6: Проверка триггеров ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 6: Проверка триггеров</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT TRIGGER_NAME, TABLE_NAME, STATUS, TRIGGER_TYPE, TRIGGERING_EVENT FROM DBA_TRIGGERS WHERE OWNER = 'HR';
+        </div>
+        <div class="verify-result">
+            {% if results.step6_triggers_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>TRIGGER_NAME</th>
+                        <th>TABLE_NAME</th>
+                        <th>STATUS</th>
+                        <th>TRIGGER_TYPE</th>
+                        <th>TRIGGERING_EVENT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step6_triggers_result %}
+                    <tr>
+                        <td>{{ row.TRIGGER_NAME }}</td>
+                        <td>{{ row.TABLE_NAME }}</td>
+                        <td>{{ row.STATUS }}</td>
+                        <td>{{ row.TRIGGER_TYPE }}</td>
+                        <td>{{ row.TRIGGERING_EVENT }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Триггеры не найдены (это нормально для стандартной HR)</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Проверяем наличие триггеров.
+        </div>
+    </div>
+    
+    <!-- ===== ШАГ 7: Проверка зависимостей ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 7: Проверка зависимостей</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT * FROM DBA_DEPENDENCIES WHERE REFERENCED_OWNER = 'HR';
+        </div>
+        <div class="verify-result">
+            {% if results.step7_dependencies_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>OWNER</th>
+                        <th>NAME</th>
+                        <th>TYPE</th>
+                        <th>REFERENCED_NAME</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step7_dependencies_result %}
+                    <tr>
+                        <td>{{ row.OWNER }}</td>
+                        <td>{{ row.NAME }}</td>
+                        <td>{{ row.TYPE }}</td>
+                        <td>{{ row.REFERENCED_NAME }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет внешних зависимостей от HR</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Проверяем, используют ли другие схемы объекты HR.
+        </div>
+    </div>
+    
+    <!-- ===== ШАГ 8: Проверка целостности данных ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 8: Проверка целостности данных (сироты)</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT COUNT(*) AS ORPHAN_EMPLOYEES FROM EMPLOYEES e WHERE e.DEPARTMENT_ID IS NOT NULL AND NOT EXISTS (SELECT 1 FROM DEPARTMENTS d WHERE d.DEPARTMENT_ID = e.DEPARTMENT_ID);
+        </div>
+        <div class="verify-result">
+            {% if results.step8_orphans_result %}
+            <table class="query-result-table">
+                <thead><tr><th>ORPHAN_EMPLOYEES</th></tr></thead>
+                <tbody>
+                    {% for row in results.step8_orphans_result %}
+                    <tr>
+                        <td>
+                            {{ row.ORPHAN_COUNT }}
+                            {% if row.ORPHAN_COUNT == 0 %}
+                                <span style="color:green"> (целостность соблюдена)</span>
+                            {% else %}
+                                <span style="color:red"> (есть нарушения!)</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет данных о целостности</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Ищем записи-сироты, которые ссылаются на несуществующие родительские ключи.
+        </div>
+    </div>
+    
+    <!-- ===== ШАГ 9: Проверка квот ===== -->
+    <div class="verify-step">
+        <h3>ШАГ 9: Проверка квот и прав доступа</h3>
+        <div class="verify-query">
+            <strong>Запрос:</strong> SELECT TABLESPACE_NAME, MAX_BYTES FROM DBA_TS_QUOTAS WHERE USERNAME = 'HR';
+        </div>
+        <div class="verify-result">
+            {% if results.step9_quotas_result %}
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>TABLESPACE_NAME</th>
+                        <th>MAX_BYTES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results.step9_quotas_result %}
+                    <tr>
+                        <td>{{ row.TABLESPACE_NAME }}</td>
+                        <td>
+                            {% if row.MAX_BYTES == -1 %}
+                                Безлимитно
+                            {% elif row.MAX_BYTES > 1024*1024 %}
+                                {{ (row.MAX_BYTES / (1024*1024))|int }} MB
+                            {% else %}
+                                {{ row.MAX_BYTES }} bytes
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Нет квот или безлимитный доступ</p>
+            {% endif %}
+        </div>
+        
+        <div class="verify-desc">
+            <strong></strong> Проверяем, есть ли у HR место в табличных пространствах.
+        </div>
+    </div>
+    
+    <!-- ЧЕК-ЛИСТ -->
+    <div class="verify-step" style="border-left-color: #28a745;">
+        <h3>ЧЕК-ЛИСТ ОЖИДАЕМЫХ РЕЗУЛЬТАТОВ</h3>
+        <div class="verify-result" style="font-family: 'Courier New', monospace;">
+            <table class="query-result-table">
+                <thead>
+                    <tr>
+                        <th>Проверка</th>
+                        <th>Результат</th>
+                        <th>Эталон</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Статус пользователя HR</td>
+                        <td>{% if results.step1_result %}{{ results.step1_result[0].ACCOUNT_STATUS }}{% else %}Не найден{% endif %}</td>
+                        <td>OPEN</td>
+                        <td>
+                            {% if results.step1_result and results.step1_result[0].ACCOUNT_STATUS == 'OPEN' %}
+                                <span style="color:green">✓</span>
+                            {% else %}
+                                <span style="color:red">✗</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Количество таблиц</td>
+                        <td>{{ results.tables_count }}</td>
+                        <td>≥ 7</td>
+                        <td>
+                            {% if results.tables_count >= 7 %}
+                                <span style="color:green">✓</span>
+                            {% else %}
+                                <span style="color:red">✗</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Сотрудники (EMPLOYEES)</td>
+                        <td>{{ results.employees_count }}</td>
+                        <td>107</td>
+                        <td>
+                            {% if results.employees_count == 107 %}
+                                <span style="color:green">✓</span>
+                            {% else %}
+                                <span style="color:red">✗</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Отделы (DEPARTMENTS)</td>
+                        <td>{{ results.departments_count }}</td>
+                        <td>27</td>
+                        <td>
+                            {% if results.departments_count == 27 %}
+                                <span style="color:green">✓</span>
+                            {% else %}
+                                <span style="color:red">✗</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Внешние ключи (FK)</td>
+                        <td>{{ results.fk_count }}</td>
+                        <td>≥ 3</td>
+                        <td>
+                            {% if results.fk_count >= 3 %}
+                                <span style="color:green">✓</span>
+                            {% else %}
+                                <span style="color:red">✗</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Целостность (сироты)</td>
+                        <td>{{ results.orphan_records }}</td>
+                        <td>0</td>
+                        <td>
+                            {% if results.orphan_records == 0 %}
+                                <span style="color:green">✓</span>
+                            {% else %}
+                                <span style="color:red">✗</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="verify-desc">
+            <strong></strong> чек-лист работоспособности схемф HR.
+        </div>
+    </div>
+    
+    <!-- ИТОГ -->
+    <hr>
+    <div style="padding: 15px; background: #f0f0f0; border-radius: 3px;">
+        <h3>ИТОГ ВЕРИФИКАЦИИ:</h3>
+        {% set errors = [] %}
+        {% if results.tables_count < 7 %}{% set errors = errors.append(1) %}{% endif %}
+        {% if results.employees_count != 107 %}{% set errors = errors.append(1) %}{% endif %}
+        {% if results.departments_count != 27 %}{% set errors = errors.append(1) %}{% endif %}
+        {% if results.orphan_records != 0 %}{% set errors = errors.append(1) %}{% endif %}
+        {% if results.fk_count < 3 %}{% set errors = errors.append(1) %}{% endif %}
+        
+        {% if errors|length == 0 %}
+            <p style="color: green; font-size: 16px;">Схема HR ПОЛНОСТЬЮ работоспособна, все проверки пройдены!</p>
+        {% else %}
+            <p style="color: red; font-size: 16px;">✗ Обнаружены проблемы ({{ errors|length }} из 6 основных проверок). Схема требует доработки.</p>
+            <p style="color: red;">Проверьте установку схемы HR через @?/demo/schema/human_resources/hr_main.sql</p>
+        {% endif %}
+    </div>
+    
+    {% endif %}
+    
+    <a href="{{ url_for('index') }}" class="back-link-simple">← На главную</a>
+</div>
+{% endblock %}

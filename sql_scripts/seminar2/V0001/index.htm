@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>V0001: Создание базы данных</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; }
+        h2 { color: #34495e; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; }
+        .file { margin: 10px 0; padding: 10px; background: white; border-radius: 5px; }
+        .file a { color: #2980b9; text-decoration: none; }
+        .file a:hover { text-decoration: underline; }
+        pre { background: #f8f9fa; padding: 10px; border-left: 3px solid #3498db; overflow: auto; }
+        .output { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-family: monospace; }
+        .back { margin-top: 20px; padding: 10px; background: #3498db; color: white; text-decoration: none; border-radius: 3px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h1>V0001: Создание базы данных SEM2_DB</h1>
+    <p><strong>Дата:</strong> 2026-03-07</p>
+    <p><strong>Разработчик:</strong> Student</p>
+    
+    <h2>Описание задачи:</h2>
+    <p>Создание базы данных SEM2_DB с минимальными параметрами и получение отчета о конфигурации.</p>
+    
+    <h2>Состав скриптов:</h2>
+    
+    <div class="file">
+        <a href="01_check_env.sql">01_check_env.sql</a> - Проверка окружения
+    </div>
+    
+    <div class="file">
+        <a href="02_create_user.sql">02_create_user.sql</a> - Создание пользователя (опционально)
+    </div>
+    
+    <div class="file">
+        <a href="03_create_database.sql">03_create_database.sql</a> - Создание базы данных
+    </div>
+    
+    <div class="file">
+        <a href="04_database_info.sql">04_database_info.sql</a> - Получение информации о БД
+    </div>
+    
+    <div class="file">
+        <a href="start.sql">start.sql</a> - Главный скрипт для последовательного запуска
+    </div>
+    
+    <h2>Результат выполнения (информация о БД):</h2>
+    
+    <div class="output">
+        <pre>
+======================================================================
+ИНФОРМАЦИЯ О БАЗЕ ДАННЫХ
+======================================================================
+
+1. Common Options (Опции БД)
+-------------------------------------------------------------
+Option Name                    Selected
+------------------------------ --------
+Example Schemas                true
+Oracle Data Mining             false
+Oracle Intermedia              false
+Oracle JVM                     true
+Oracle Label Security          false
+Oracle OLAP                    false
+Oracle Spatial                 false
+Oracle Text                    true
+Oracle Ultra Search            false
+Oracle XML DB                  true
+
+2. Initialization Parameters (Параметры инициализации)
+-------------------------------------------------------------
+Name                           Value
+------------------------------ ------------------------------
+aq_tm_processes                1
+background_dump_dest           /u01/app/oracle/admin/sem2_db/bdump
+compatible                     11.2.0.0.0
+control_files                   /u01/app/oracle/oradata/sem2_db/control01.ctl
+db_block_size                  8192
+db_cache_size                  24M
+db_name                        sem2_db
+db_file_multiblock_read_count  16
+...
+        </pre>
+    </div>
+    
+    <p><em>Примечание: Реальные параметры могут отличаться в зависимости от версии Oracle.</em></p>
+    
+    <a href="../index.htm" class="back">← Назад к списку задач</a>
+</body>
+</html>

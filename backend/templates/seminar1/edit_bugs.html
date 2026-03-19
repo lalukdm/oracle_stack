@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование дефекта{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="add-form-container">
+    <h1>Редактирование дефекта</h1>
+
+    {% if error %}
+    <div class="error-message" style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <p style="color: #721c24;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    {% if record %}
+    <form method="post" class="add-form">
+        <div class="form-group">
+            <label>Название дефекта *</label>
+            <input type="text" name="defect_title" required class="form-control" 
+                   value="{{ record[1] or '' }}">
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Проект</label>
+                <select name="project_id" class="form-control" id="project-select">
+                    <option value="">Выберите проект</option>
+                    {% for proj in projects %}
+                    <option value="{{ proj[0] }}" {% if record[2] == proj[0] %}selected{% endif %}>
+                        {{ proj[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Тест-кейс</label>
+                <select name="testcase_id" class="form-control" id="testcase-select">
+                    <option value="">Не связан с тест-кейсом</option>
+                    {% for tc in testcases %}
+                    <option value="{{ tc[0] }}" {% if record[3] == tc[0] %}selected{% endif %}>
+                        {{ tc[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Описание</label>
+            <textarea name="description" class="form-control" rows="4">{{ record[4] or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Шаги для воспроизведения</label>
+            <textarea name="steps_to_reproduce" class="form-control" rows="4">{{ record[5] or '' }}</textarea>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Серьезность *</label>
+                <select name="severity" required class="form-control">
+                    <option value="BLOCKER" {% if record[6] == 'BLOCKER' %}selected{% endif %}>BLOCKER - Блокирующая</option>
+                    <option value="CRITICAL" {% if record[6] == 'CRITICAL' %}selected{% endif %}>CRITICAL - Критическая</option>
+                    <option value="MAJOR" {% if record[6] == 'MAJOR' %}selected{% endif %}>MAJOR - Значительная</option>
+                    <option value="MINOR" {% if record[6] == 'MINOR' %}selected{% endif %}>MINOR - Незначительная</option>
+                    <option value="TRIVIAL" {% if record[6] == 'TRIVIAL' %}selected{% endif %}>TRIVIAL - Тривиальная</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Приоритет</label>
+                <select name="priority" class="form-control">
+                    <option value="1" {% if record[7] == 1 %}selected{% endif %}>1 - Немедленный</option>
+                    <option value="2" {% if record[7] == 2 %}selected{% endif %}>2 - Высокий</option>
+                    <option value="3" {% if record[7] == 3 %}selected{% endif %}>3 - Средний</option>
+                    <option value="4" {% if record[7] == 4 %}selected{% endif %}>4 - Низкий</option>
+                    <option value="5" {% if record[7] == 5 %}selected{% endif %}>5 - Очень низкий</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Статус</label>
+            <select name="status" class="form-control">
+                <option value="OPEN" {% if record[8] == 'OPEN' %}selected{% endif %}>Открыт</option>
+                <option value="IN_PROGRESS" {% if record[8] == 'IN_PROGRESS' %}selected{% endif %}>В работе</option>
+                <option value="FIXED" {% if record[8] == 'FIXED' %}selected{% endif %}>Исправлен</option>
+                <option value="VERIFIED" {% if record[8] == 'VERIFIED' %}selected{% endif %}>Проверен</option>
+                <option value="CLOSED" {% if record[8] == 'CLOSED' %}selected{% endif %}>Закрыт</option>
+                <option value="REOPENED" {% if record[8] == 'REOPENED' %}selected{% endif %}>Переоткрыт</option>
+            </select>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Назначено на</label>
+                <select name="assigned_to" class="form-control">
+                    <option value="">Не назначено</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp[0] }}" {% if record[9] == emp[0] %}selected{% endif %}>
+                        {{ emp[1] }} {{ emp[2] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="flex: 1;">
+                <label>Сообщил *</label>
+                <select name="reported_by" required class="form-control">
+                    <option value="">Выберите сотрудника</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp[0] }}" {% if record[10] == emp[0] %}selected{% endif %}>
+                        {{ emp[1] }} {{ emp[2] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="asu-btn-success">Сохранить</button>
+            <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Отмена</a>
+        </div>
+    </form>
+    {% else %}
+    <p>Дефект не найден</p>
+    <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Вернуться</a>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('project-select').addEventListener('change', function() {
+    const projectId = this.value;
+    const testcaseSelect = document.getElementById('testcase-select');
+    
+    if (projectId) {
+        fetch(`/seminar1/task3_advanced/get_testcases?project_id=${projectId}`)
+            .then(response => response.json())
+            .then(data => {
+                testcaseSelect.innerHTML = '<option value="">Не связан с тест-кейсом</option>';
+                data.testcases.forEach(tc => {
+                    const selected = tc.id == {{ record[3] if record and record[3] else 'null' }} ? 'selected' : '';
+                    testcaseSelect.innerHTML += `<option value="${tc.id}" ${selected}>${tc.name}</option>`;
+                });
+            });
+    }
+});
+</script>
+{% endblock %}

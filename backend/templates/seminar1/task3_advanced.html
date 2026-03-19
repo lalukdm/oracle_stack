@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+
+{% block title %}АСУ отдела тестирования ПО (расширенная версия){% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="asu-layout">
+    <!-- ЛЕВАЯ КОЛОНКА: НАВИГАЦИЯ ПО МОДУЛЯМ -->
+    <aside class="asu-sidebar">
+        <div class="asu-sidebar-header">
+            <h2>Модули</h2>
+        </div>
+
+        <nav class="asu-nav" id="module-nav">
+            <button class="asu-nav-item asu-nav-item-active" data-module="clients">
+                <span class="asu-nav-title">Клиенты</span>
+                <span class="asu-nav-sub">карточки заказчиков</span>
+            </button>
+            <button class="asu-nav-item" data-module="employees">
+                <span class="asu-nav-title">Сотрудники</span>
+                <span class="asu-nav-sub">тестировщики и аналитики</span>
+            </button>
+            <button class="asu-nav-item" data-module="projects">
+                <span class="asu-nav-title">Проекты</span>
+                <span class="asu-nav-sub">ПО в тестировании</span>
+            </button>
+            <button class="asu-nav-item" data-module="testplans">
+                <span class="asu-nav-title">Планы тестирования</span>
+                <span class="asu-nav-sub">итерации и релизы</span>
+            </button>
+            <button class="asu-nav-item" data-module="testcases">
+                <span class="asu-nav-title">Тест-кейсы</span>
+                <span class="asu-nav-sub">каталог сценариев</span>
+            </button>
+            <button class="asu-nav-item" data-module="bugs">
+                <span class="asu-nav-title">Дефекты</span>
+                <span class="asu-nav-sub">bug-трекер</span>
+            </button>
+            <button class="asu-nav-item" data-module="reports">
+                <span class="asu-nav-title">Отчёты</span>
+                <span class="asu-nav-sub">срезы по релизам</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- ПРАВАЯ КОЛОНКА: РАБОЧАЯ ОБЛАСТЬ -->
+    <section class="asu-main">
+        <header class="asu-main-header">
+            <div>
+                <h1>АСУ отдела тестирования ПО</h1>
+                <p class="asu-main-subtitle">
+                    Расширенная версия с реальной базой данных Oracle
+                </p>
+            </div>
+
+            <div class="asu-main-controls">
+                <label class="asu-field">
+                    <span class="asu-label">Текущий проект</span>
+                    <select id="filter-project">
+                        <option value="">Все проекты</option>
+                        {% for proj in projects %}
+                        <option value="{{ proj[0] }}">{{ proj[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label class="asu-field">
+                    <span class="asu-label">Релиз</span>
+                    <select id="filter-release">
+                        <option value="">Все релизы</option>
+                        {% for rel in releases %}
+                        <option value="{{ rel[0] }}">{{ rel[1] }} ({{ rel[2] }})</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </header>
+
+        {% if error %}
+        <div style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 4px;">
+            <h3 style="color: #721c24;">❌ Ошибка: {{ error }}</h3>
+        </div>
+        {% endif %}
+
+        <!-- СТРОКА КАРТОЧЕК С ИНФО -->
+        <div class="asu-cards-row">
+            <div class="asu-card">
+                <div class="asu-card-label">Клиенты</div>
+                <div class="asu-card-value">{{ stats.active_clients }}</div>
+                <div class="asu-card-hint">активных клиентских организаций</div>
+            </div>
+            <div class="asu-card">
+                <div class="asu-card-label">Активные проекты</div>
+                <div class="asu-card-value">{{ stats.active_projects }}</div>
+                <div class="asu-card-hint">в работе у отдела тестирования</div>
+            </div>
+            <div class="asu-card">
+                <div class="asu-card-label">Открытые дефекты</div>
+                <div class="asu-card-value asu-card-value-bad">{{ stats.open_defects }}</div>
+                <div class="asu-card-hint">требуют внимания</div>
+            </div>
+            <div class="asu-card">
+                <div class="asu-card-label">Тест-кейсы</div>
+                <div class="asu-card-value">{{ stats.active_testcases }}</div>
+                <div class="asu-card-hint">активных сценариев</div>
+            </div>
+        </div>
+
+        <!-- НИЖНИЙ БЛОК: ФИЛЬТРЫ И ТАБЛИЦА -->
+        <div class="asu-bottom">
+            <!-- Панель фильтрации -->
+            <div class="asu-filter-panel">
+                <h2>Фильтрация данных</h2>
+                <p class="asu-filter-note">
+                    Используйте фильтры для поиска нужной информации в базе данных Oracle
+                </p>
+
+                <form id="filter-form" class="asu-filter-form" onsubmit="return false;">
+                    <div class="asu-field">
+                        <span class="asu-label">Тип сущности</span>
+                        <select name="entity" id="entity-select">
+                            <option value="clients">Клиенты</option>
+                            <option value="employees">Сотрудники</option>
+                            <option value="projects">Проекты</option>
+                            <option value="testcases">Тест-кейсы</option>
+                            <option value="bugs">Дефекты</option>
+                        </select>
+                    </div>
+
+                    <div class="asu-field">
+                        <span class="asu-label">Поиск</span>
+                        <input type="text" name="q" id="search-input" placeholder="Введите текст для поиска..." />
+                    </div>
+
+                    <div class="asu-field-grid">
+                        <label class="asu-checkbox">
+                            <input type="checkbox" name="only_active" id="only-active" checked />
+                            <span>Только активные</span>
+                        </label>
+                        <label class="asu-checkbox">
+                            <input type="checkbox" name="has_open_bugs" id="has-open-bugs" />
+                            <span>Есть открытые дефекты</span>
+                        </label>
+                        <label class="asu-checkbox">
+                            <input type="checkbox" name="has_test_plan" id="has-test-plan" />
+                            <span>Есть план тестирования</span>
+                        </label>
+                    </div>
+
+                    <div class="asu-filter-actions">
+                        <button type="submit" class="asu-btn-primary" id="apply-filters">
+                            Применить фильтры
+                        </button>
+                        <button type="button" class="asu-btn-secondary" id="reset-filters">
+                            Сбросить
+                        </button>
+                        <button type="button" class="asu-btn-success" id="add-record">
+                            + Добавить запись
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Таблица с данными -->
+            <div class="asu-table-panel">
+                <div class="asu-table-header">
+                    <h2>Результат выборки</h2>
+                    <span class="asu-table-caption" id="table-caption">
+                        Загрузка данных...
+                    </span>
+                </div>
+
+                <div class="asu-table-wrapper">
+                    <table class="asu-table" id="data-table">
+                        <thead id="table-header">
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Статус</th>
+                                <th>Приоритет</th>
+                                <th>Ответственный</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr>
+                                <td colspan="6" class="asu-table-empty">
+                                    Загрузка данных...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="asu-table-footer">
+                    <span id="record-count">0 записей</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Модальное окно для подтверждения удаления -->
+<div id="delete-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Подтверждение удаления</h3>
+        <p>Вы уверены, что хотите удалить эту запись?</p>
+        <div class="form-actions">
+            <button type="button" class="asu-btn-primary" id="confirm-delete">Удалить</button>
+            <button type="button" class="asu-btn-secondary" id="cancel-delete">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const entitySelect = document.getElementById('entity-select');
+    const searchInput = document.getElementById('search-input');
+    const onlyActiveCheck = document.getElementById('only-active');
+    const hasOpenBugsCheck = document.getElementById('has-open-bugs');
+    const hasTestPlanCheck = document.getElementById('has-test-plan');
+    const filterProject = document.getElementById('filter-project');
+    const filterRelease = document.getElementById('filter-release');
+    const applyBtn = document.getElementById('apply-filters');
+    const resetBtn = document.getElementById('reset-filters');
+    const addBtn = document.getElementById('add-record');
+    const tableBody = document.getElementById('table-body');
+    const tableHeader = document.getElementById('table-header');
+    const tableCaption = document.getElementById('table-caption');
+    const recordCount = document.getElementById('record-count');
+    
+    let currentDeleteId = null;
+    let currentDeleteEntity = null;
+    
+    // Навигация по модулям
+    const navItems = document.querySelectorAll('.asu-nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            navItems.forEach(nav => nav.classList.remove('asu-nav-item-active'));
+            this.classList.add('asu-nav-item-active');
+            
+            const module = this.dataset.module;
+            if (module && ['clients', 'employees', 'projects', 'testcases', 'bugs'].includes(module)) {
+                entitySelect.value = module;
+                loadData();
+            } else if (module === 'reports') {
+                window.location.href = '/seminar1/task3_advanced/reports';
+            }
+        });
+    });
+    
+    // Загрузка данных
+    function loadData() {
+        const params = new URLSearchParams({
+            entity: entitySelect.value,
+            q: searchInput.value,
+            only_active: onlyActiveCheck.checked,
+            has_open_bugs: hasOpenBugsCheck.checked,
+            has_test_plan: hasTestPlanCheck.checked,
+            project: filterProject.value,
+            release: filterRelease.value
+        });
+        
+        tableBody.innerHTML = '<tr><td colspan="6" class="asu-table-empty">Загрузка...</td></tr>';
+        tableCaption.textContent = 'Загрузка данных...';
+        
+        fetch(`/seminar1/task3_advanced/data?${params}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    renderTable(result.data, result.columns);
+                    tableCaption.textContent = `Найдено записей: ${result.count}`;
+                    recordCount.textContent = `${result.count} записей`;
+                } else {
+                    tableBody.innerHTML = `<tr><td colspan="6" class="asu-table-empty">Ошибка: ${result.error}</td></tr>`;
+                    tableCaption.textContent = 'Ошибка загрузки';
+                }
+            })
+            .catch(error => {
+                tableBody.innerHTML = `<tr><td colspan="6" class="asu-table-empty">Ошибка загрузки: ${error}</td></tr>`;
+                tableCaption.textContent = 'Ошибка загрузки';
+            });
+    }
+    
+    // Рендер таблицы
+    function renderTable(data, columns) {
+        // Обновляем заголовки
+        let headerHtml = '<tr>';
+        columns.forEach(col => {
+            headerHtml += `<th>${col}</th>`;
+        });
+        headerHtml += '<th>Действия</th></tr>';
+        tableHeader.innerHTML = headerHtml;
+        
+        // Обновляем данные
+        if (data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="' + (columns.length + 1) + '" class="asu-table-empty">Нет данных для отображения</td></tr>';
+            return;
+        }
+        
+        let bodyHtml = '';
+        data.forEach(item => {
+            bodyHtml += '<tr>';
+            
+            // Определяем, какие поля показывать в зависимости от типа сущности
+            if (entitySelect.value === 'clients') {
+                bodyHtml += `<td>${item.id}</td>`;
+                bodyHtml += `<td>${item.name || ''}</td>`;
+                bodyHtml += `<td>${formatStatus(item.status)}</td>`;
+                bodyHtml += `<td>${item.priority || ''}/5</td>`;
+                bodyHtml += `<td>${item.responsible || 'Не назначен'}</td>`;
+            } else if (entitySelect.value === 'employees') {
+                bodyHtml += `<td>${item.id}</td>`;
+                bodyHtml += `<td>${item.name || ''}</td>`;
+                bodyHtml += `<td>${formatStatus(item.status)}</td>`;
+                bodyHtml += `<td>${item.position || ''}</td>`;
+                bodyHtml += `<td>${item.department || ''}</td>`;
+            } else if (entitySelect.value === 'projects') {
+                bodyHtml += `<td>${item.id}</td>`;
+                bodyHtml += `<td>${item.name || ''}</td>`;
+                bodyHtml += `<td>${formatStatus(item.status)}</td>`;
+                bodyHtml += `<td>${item.priority || ''}/5</td>`;
+                bodyHtml += `<td>${item.manager || 'Не назначен'}</td>`;
+            } else if (entitySelect.value === 'testcases') {
+                bodyHtml += `<td>${item.id}</td>`;
+                bodyHtml += `<td>${item.name || ''}</td>`;
+                bodyHtml += `<td>${formatStatus(item.status)}</td>`;
+                bodyHtml += `<td>${item.priority || ''}/5</td>`;
+                bodyHtml += `<td>${item.author || 'Неизвестен'}</td>`;
+            } else if (entitySelect.value === 'bugs') {
+                bodyHtml += `<td>${item.id}</td>`;
+                bodyHtml += `<td>${item.title || ''}</td>`;
+                bodyHtml += `<td>${formatStatus(item.status)}</td>`;
+                bodyHtml += `<td>${item.priority || ''}/5</td>`;
+                bodyHtml += `<td>${item.assigned || 'Не назначен'}</td>`;
+            }
+            
+            // Кнопки действий
+            bodyHtml += `<td>
+                <button class="btn-view" onclick="viewRecord('${entitySelect.value}', ${item.id})">👁️</button>
+                <button class="btn-edit" onclick="editRecord('${entitySelect.value}', ${item.id})">✏️</button>
+                <button class="btn-delete" onclick="showDeleteModal('${entitySelect.value}', ${item.id})">🗑️</button>
+            </td>`;
+            bodyHtml += '</tr>';
+        });
+        tableBody.innerHTML = bodyHtml;
+    }
+    
+    // Форматирование статуса
+    function formatStatus(status) {
+        if (!status) return '';
+        
+        status = status.toString();
+        if (status === 'ACTIVE' || status === 'OPEN' || status === 'IN_PROGRESS') {
+            return `<span class="badge-success">${status}</span>`;
+        } else if (status === 'INACTIVE' || status === 'CLOSED' || status === 'COMPLETED') {
+            return `<span class="badge-secondary">${status}</span>`;
+        } else if (status === 'ON_HOLD' || status === 'FIXED') {
+            return `<span class="badge-warning">${status}</span>`;
+        } else if (status === 'BLOCKER' || status === 'CRITICAL') {
+            return `<span class="badge-danger">${status}</span>`;
+        }
+        return status;
+    }
+    
+    // Применение фильтров
+    applyBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        loadData();
+    });
+    
+    // Сброс фильтров
+    resetBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        onlyActiveCheck.checked = true;
+        hasOpenBugsCheck.checked = false;
+        hasTestPlanCheck.checked = false;
+        filterProject.value = '';
+        filterRelease.value = '';
+        loadData();
+    });
+    
+    // Добавление записи
+    addBtn.addEventListener('click', function() {
+        const entity = entitySelect.value;
+        window.location.href = `/seminar1/task3_advanced/add/${entity}`;
+    });
+    
+    // Фильтр проектов/релизов
+    filterProject.addEventListener('change', loadData);
+    filterRelease.addEventListener('change', loadData);
+    
+    // Поиск с задержкой
+    let timeout = null;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(loadData, 500);
+    });
+    
+    // Модальное окно удаления
+    const modal = document.getElementById('delete-modal');
+    const closeBtn = document.querySelector('.close');
+    const cancelBtn = document.getElementById('cancel-delete');
+    const confirmBtn = document.getElementById('confirm-delete');
+    
+    window.showDeleteModal = function(entity, id) {
+        currentDeleteEntity = entity;
+        currentDeleteId = id;
+        modal.style.display = 'block';
+    };
+    
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    };
+    
+    cancelBtn.onclick = function() {
+        modal.style.display = 'none';
+    };
+    
+    confirmBtn.onclick = function() {
+        if (currentDeleteEntity && currentDeleteId) {
+            fetch(`/seminar1/task3_advanced/delete/${currentDeleteEntity}/${currentDeleteId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(result => {
+                modal.style.display = 'none';
+                if (result.success) {
+                    alert('Запись успешно удалена');
+                    loadData();
+                } else {
+                    alert('Ошибка: ' + result.error);
+                }
+            })
+            .catch(error => {
+                modal.style.display = 'none';
+                alert('Ошибка при удалении: ' + error);
+            });
+        }
+    };
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
+    
+    // Функции для просмотра и редактирования
+    window.viewRecord = function(entity, id) {
+        window.location.href = `/seminar1/task3_advanced/view/${entity}/${id}`;
+    };
+    
+    window.editRecord = function(entity, id) {
+        window.location.href = `/seminar1/task3_advanced/edit/${entity}/${id}`;
+    };
+    
+    // Загружаем данные при старте
+    loadData();
+});
+</script>
+{% endblock %}

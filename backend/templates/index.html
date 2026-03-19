@@ -15,9 +15,20 @@
       <h2>Семинар 1</h2>
       <p>Интерфейсные модули, формы, работа с выбором данных.</p>
     </a>
+    <a class="card" href="{{ url_for('seminar2_index') }}">
+      <h2>Семинар 2</h2>
+      <p>Основные компоненты СУБД Oracle.</p>
+    </a>
     <a class="card" href="{{ url_for('db_test') }}">
       <h2>Проверка БД</h2>
       <p>Быстрый тест соединения с Oracle XE (JSON).</p>
+    </a>
+    <a class="card" href="{{ url_for('hr_verify') }}">
+      <h2>Верификация схемы HR</h2>
+    </a>
+        <a class="card" href="{{ url_for('seminar1_task3_advanced') }}">
+      <h2>АСУ</h2>
+      <p>Допзадание расшинеррая АСУ тестирования ПО</p>
     </a>
   </div>
 {% endblock %}

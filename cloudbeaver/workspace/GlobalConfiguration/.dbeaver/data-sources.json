@@ -1,5 +1,7 @@
 {
-	"folders": {},
+	"folders": {
+		"asu": {}
+	},
 	"connections": {
 		"postgresql-template-1": {
 			"provider": "postgresql",
@@ -50,9 +52,8 @@
 			"provider": "oracle",
 			"driver": "oracle_thin",
 			"name": "Oracle@38.244.208.110 (1)",
-			"navigator-show-only-entities": true,
-			"navigator-hide-folders": true,
-			"navigator-hide-virtual": true,
+			"save-password": true,
+			"show-system-objects": true,
 			"configuration": {
 				"host": "38.244.208.110",
 				"port": "1521",

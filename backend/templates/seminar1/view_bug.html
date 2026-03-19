@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр дефекта{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sem1_task3.css') }}">
+
+<div class="view-container">
+    <h1>Карточка дефекта</h1>
+
+    {% if record %}
+    <div class="view-card">
+        <div class="view-header">
+            <h2>#{{ record[0] }}: {{ record[1] }}</h2>
+            <div class="view-actions">
+                <a href="/seminar1/task3_advanced/edit/bugs/{{ record[0] }}" class="asu-btn-primary">Редактировать</a>
+                <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Назад</a>
+            </div>
+        </div>
+
+        <div class="view-section">
+            <h3>Основная информация</h3>
+            <table class="view-table">
+                <tr>
+                    <th>ID:</th>
+                    <td>{{ record[0] }}</td>
+                </tr>
+                <tr>
+                    <th>Название:</th>
+                    <td>{{ record[1] }}</td>
+                </tr>
+                <tr>
+                    <th>Проект:</th>
+                    <td>{{ record[2] or 'Не указан' }}</td>
+                </tr>
+                <tr>
+                    <th>Тест-кейс:</th>
+                    <td>{{ record[3] or 'Не связан' }}</td>
+                </tr>
+                <tr>
+                    <th>Серьезность:</th>
+                    <td>
+                        {% if record[6] == 'BLOCKER' %}
+                            <span class="badge-danger">BLOCKER - Блокирующая</span>
+                        {% elif record[6] == 'CRITICAL' %}
+                            <span class="badge-danger">CRITICAL - Критическая</span>
+                        {% elif record[6] == 'MAJOR' %}
+                            <span class="badge-warning">MAJOR - Значительная</span>
+                        {% elif record[6] == 'MINOR' %}
+                            <span class="badge-secondary">MINOR - Незначительная</span>
+                        {% else %}
+                            <span class="badge-info">{{ record[6] }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Приоритет:</th>
+                    <td>{{ record[7] }}/5</td>
+                </tr>
+                <tr>
+                    <th>Статус:</th>
+                    <td>
+                        {% if record[8] == 'OPEN' %}
+                            <span class="badge-danger">Открыт</span>
+                        {% elif record[8] == 'IN_PROGRESS' %}
+                            <span class="badge-warning">В работе</span>
+                        {% elif record[8] == 'FIXED' %}
+                            <span class="badge-success">Исправлен</span>
+                        {% elif record[8] == 'VERIFIED' %}
+                            <span class="badge-info">Проверен</span>
+                        {% elif record[8] == 'CLOSED' %}
+                            <span class="badge-secondary">Закрыт</span>
+                        {% else %}
+                            {{ record[8] }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Назначен:</th>
+                    <td>{{ record[9] or 'Не назначен' }}</td>
+                </tr>
+                <tr>
+                    <th>Сообщил:</th>
+                    <td>{{ record[10] or 'Неизвестен' }}</td>
+                </tr>
+                <tr>
+                    <th>Дата создания:</th>
+                    <td>{{ record[11] }}</td>
+                </tr>
+                <tr>
+                    <th>Дата исправления:</th>
+                    <td>{{ record[12] or 'Не исправлен' }}</td>
+                </tr>
+                <tr>
+                    <th>Дата закрытия:</th>
+                    <td>{{ record[13] or 'Не закрыт' }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="view-section">
+            <h3>Описание</h3>
+            <div class="content-box">
+                {{ record[4] or 'Нет описания' }}
+            </div>
+        </div>
+
+        <div class="view-section">
+            <h3>Шаги для воспроизведения</h3>
+            <div class="content-box steps-box">
+                {% if record[5] %}
+                    {% for step in record[5].split('\n') %}
+                        <div class="step">{{ step }}</div>
+                    {% endfor %}
+                {% else %}
+                    Не указаны
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <p>Дефект не найден</p>
+    <a href="{{ url_for('seminar1_task3_advanced') }}" class="asu-btn-secondary">Вернуться</a>
+    {% endif %}
+</div>
+
+<style>
+.view-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+}
+.view-header h2 {
+    margin: 0;
+    color: #2c3e50;
+}
+.view-actions {
+    display: flex;
+    gap: 10px;
+}
+.view-section {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.view-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #2c3e50;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 10px;
+}
+.view-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.view-table th {
+    width: 200px;
+    text-align: left;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: normal;
+    color: #7f8c8d;
+}
+.view-table td {
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+    color: #2c3e50;
+}
+.content-box {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    border-left: 3px solid #e74c3c;
+    white-space: pre-wrap;
+    font-family: monospace;
+}
+.steps-box {
+    background-color: #f8f9fa;
+}
+.step {
+    padding: 5px 0;
+    border-bottom: 1px dashed #dee2e6;
+}
+.step:last-child {
+    border-bottom: none;
+}
+.badge-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Отчет о конфигурации БД Oracle XE{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/seminar2.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1>Отчет о конфигурации базы данных Oracle XE</h1>
+    <p class="date">Дата создания: 2026-03-07</p>
+    <p class="date">Студент: Лялюк Д.М.</p>
+    
+    <div class="info">
+        <strong>Информация о подключении:</strong><br>
+        База данных: {{ db_info.name }}<br>
+        Версия: {{ db_info.version }}<br>
+        Хост: {{ db_info.host }}
+    </div>
+
+    <h2>1. Common Options (Опции БД)</h2>
+    <table>
+        <thead>
+            <tr><th>Option Name</th><th>Selected</th></tr>
+        </thead>
+        <tbody>
+            {% for opt in common_options %}
+            <tr><td>{{ opt.name }}</td><td>{{ opt.selected }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>2. Initialization Parameters (Параметры инициализации)</h2>
+    <table>
+        <thead>
+            <tr><th>Parameter</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            {% for param in init_params %}
+            <tr><td>{{ param.name }}</td><td>{{ param.value }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>3. Character Sets (Кодировки)</h2>
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            {% for cs in char_sets %}
+            <tr><td>{{ cs.name }}</td><td>{{ cs.value }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>4. Control Files (Файлы управления)</h2>
+    <table>
+        <thead>
+            <tr><th>Control File</th></tr>
+        </thead>
+        <tbody>
+            {% for cf in control_files %}
+            <tr><td>{{ cf }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>5. Tablespaces (Табличные пространства)</h2>
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Status</th><th>Type</th></tr>
+        </thead>
+        <tbody>
+            {% for ts in tablespaces %}
+            <tr><td>{{ ts.name }}</td><td>{{ ts.status }}</td><td>{{ ts.type }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>6. Data Files (Файлы данных)</h2>
+    <table>
+        <thead>
+            <tr><th>Tablespace</th><th>File</th><th>Size (MB)</th></tr>
+        </thead>
+        <tbody>
+            {% for df in data_files %}
+            <tr><td>{{ df.tablespace }}</td><td>{{ df.file }}</td><td>{{ df.size }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>7. Redo Log Groups (Группы логов)</h2>
+    <table>
+        <thead>
+            <tr><th>Group</th><th>Size (KB)</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for log in redo_logs %}
+            <tr><td>{{ log.group }}</td><td>{{ log.size }}</td><td>{{ log.status }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}
