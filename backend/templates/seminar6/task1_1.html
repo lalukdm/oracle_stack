@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Ввод данных SQL скриптами{% endblock %}
+
+{% block extra_head %}
+<style>
+    .seminar6-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 10px;
+    }
+    h2 {
+        color: #34495e;
+        margin-top: 30px;
+        background: #ecf0f1;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .sql-input {
+        width: 100%;
+        height: 200px;
+        font-family: monospace;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        font-size: 14px;
+    }
+    .sql-output {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 20px;
+        border-radius: 4px;
+        font-family: monospace;
+        overflow-x: auto;
+        margin-top: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    th {
+        background: #3498db;
+        color: white;
+        padding: 10px;
+        text-align: left;
+    }
+    td {
+        padding: 8px;
+        border-bottom: 1px solid #444;
+    }
+    .error {
+        color: #e74c3c;
+        font-weight: bold;
+        background: #2c3e50;
+        padding: 15px;
+        border-radius: 4px;
+    }
+    .btn {
+        padding: 12px 25px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+    }
+    .btn:hover {
+        background: #2980b9;
+    }
+    .btn-secondary {
+        background: #95a5a6;
+    }
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+    .example-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-left: 4px solid #3498db;
+        margin: 20px 0;
+    }
+    .example-box code {
+        display: block;
+        padding: 10px;
+        background: #2c3e50;
+        color: #ecf0f1;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="seminar6-container">
+    <h1>Семинар 6. Задание 1.1: Ввод данных посредством SQL скриптов</h1>
+
+    
+    <div class="info">
+        <strong>Задание:</strong> Для модуля АСУ согласно варианту (отдел тестирования ПО) 
+        привести пример ввода данных в связанные таблицы SQL скриптами (пример заполнения справочников).
+    </div>
+
+    <h2>Введите SQL скрипт для ввода данных:</h2>
+    
+    <form method="post">
+        <textarea name="sql_script" class="sql-input" placeholder="INSERT INTO asu_clients (client_id, client_name) VALUES (seq_client_id.NEXTVAL, 'ООО Тест');">{{ sql_script or '' }}</textarea>
+        <br>
+        <button type="submit" name="action" value="execute" class="btn">Выполнить скрипт</button>
+        <button type="submit" name="action" value="example" class="btn btn-secondary">Загрузить пример</button>
+    </form>
+    
+    {% if error %}
+    <div class="error">
+        <pre>{{ error }}</pre>
+    </div>
+    {% endif %}
+    
+    {% if results %}
+    <div class="sql-output">
+        <h3 style="color: #3498db; margin-top: 0;">Результат выполнения:</h3>
+        <p>Затронуто строк: {{ results.rowcount }}</p>
+        {% if results.data %}
+        <table>
+            <thead>
+                <tr>
+                    {% for col in results.columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results.data %}
+                <tr>
+                    {% for col in results.columns %}
+                    <td>{{ row[col] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Скрипт выполнен успешно.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <h2>Примеры скриптов для ввода данных:</h2>
+    
+    <div class="example-box">
+        <h3>Пример 1: Заполнение справочника клиентов</h3>
+        <code>
+INSERT INTO asu_clients (client_id, client_name, contact_person, phone, email, priority)
+VALUES (seq_client_id.NEXTVAL, 'ООО "Ромашка"', 'Иванов Иван', '+7(495)111-22-33', 'ivanov@romashka.ru', 1);
+
+INSERT INTO asu_clients (client_id, client_name, contact_person, phone, email, priority)
+VALUES (seq_client_id.NEXTVAL, 'АО "ТехноСервис"', 'Петров Петр', '+7(495)222-33-44', 'petrov@ts.ru', 2);
+
+SELECT * FROM asu_clients;
+        </code>
+    </div>
+    
+    <div class="example-box">
+        <h3>Пример 2: Заполнение справочника сотрудников</h3>
+        <code>
+INSERT INTO asu_employees (employee_id, first_name, last_name, position, department, email, phone, salary)
+VALUES (seq_employee_id.NEXTVAL, 'Алексей', 'Смирнов', 'Руководитель', 'MANAGEMENT', 'a.smirnov@asu.ru', '+7(903)111-11-11', 150000);
+
+INSERT INTO asu_employees (employee_id, first_name, last_name, position, department, email, phone, salary, manager_id)
+VALUES (seq_employee_id.NEXTVAL, 'Елена', 'Петрова', 'Тестировщик', 'TESTING', 'e.petrova@asu.ru', '+7(903)222-22-22', 90000, 1);
+
+SELECT * FROM asu_employees;
+        </code>
+    </div>
+    
+    <div class="example-box">
+        <h3>Пример 3: Вставка связанных данных (проекты + клиенты)</h3>
+        <code>
+-- Сначала убедимся что есть клиенты
+SELECT * FROM asu_clients;
+
+-- Вставляем проект для клиента с ID=1
+INSERT INTO asu_projects (project_id, project_name, client_id, description, start_date, status, priority)
+VALUES (seq_project_id.NEXTVAL, 'Разработка CRM', 1, 'Создание CRM системы', SYSDATE, 'ACTIVE', 1);
+
+-- Проверяем вставку
+SELECT p.project_name, c.client_name 
+FROM asu_projects p 
+JOIN asu_clients c ON p.client_id = c.client_id;
+        </code>
+    </div>
+    
+    <div class="example-box">
+        <h3>Пример 4: Проверка введенных данных</h3>
+        <code>
+SELECT 'Клиенты:' as table_name, COUNT(*) as count FROM asu_clients
+UNION ALL
+SELECT 'Сотрудники:', COUNT(*) FROM asu_employees
+UNION ALL
+SELECT 'Проекты:', COUNT(*) FROM asu_projects
+UNION ALL
+SELECT 'Тест-кейсы:', COUNT(*) FROM asu_test_cases
+UNION ALL
+SELECT 'Дефекты:', COUNT(*) FROM asu_defects;
+        </code>
+    </div>
+</div>
+{% endblock %}

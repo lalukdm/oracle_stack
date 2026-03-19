@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Задание 2.6{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px;">
+    <h1>📅 Задание 2.6: Номер дня недели</h1>
+    <p>Вычисление номера дня недели (понедельник = 1) независимо от NLS-установок</p>
+    
+    <form method="post" style="margin: 20px 0;">
+        <button type="submit" name="action" value="calculate" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Вычислить для текущей даты
+        </button>
+    </form>
+    
+    {% if error %}
+    <div style="color: red; margin-top: 20px;">{{ error }}</div>
+    {% endif %}
+    
+    {% if result %}
+    <div style="background: #e8f4f8; padding: 20px; border-radius: 8px; margin-top: 20px;">
+        <h3>Результат:</h3>
+        <table style="width: 100%;">
+            <tr>
+                <td style="padding: 10px;"><strong>Текущая дата:</strong></td>
+                <td style="padding: 10px;">{{ result.current_date }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px;"><strong>День недели (англ.):</strong></td>
+                <td style="padding: 10px;">{{ result.day_name }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px;"><strong>Номер дня (пн=1):</strong></td>
+                <td style="padding: 10px; font-size: 24px; font-weight: bold;">{{ result.day_number }}</td>
+            </tr>
+        </table>
+    </div>
+    {% endif %}
+    
+    <div style="margin-top: 30px; background: #f4f4f4; padding: 15px; border-radius: 4px;">
+        <h4>Каноническое решение:</h4>
+        <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px;">
+SELECT (INSTR('MONTUEWEDTHUFRISATSUN', 
+              TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE = AMERICAN')) + 2) / 3 
+FROM DUAL;</pre>
+        
+        <h4 style="margin-top: 20px;">Как это работает:</h4>
+        <ol>
+            <li><strong>TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE = AMERICAN')</strong> - получаем сокращенное название дня недели на английском (MON, TUE, WED...)</li>
+            <li><strong>INSTR('MONTUEWEDTHUFRISATSUN', ...)</strong> - ищем позицию этого названия в строке</li>
+            <li><strong>(позиция + 2) / 3</strong> - преобразуем позицию в номер дня (MON=1, TUE=2...)</li>
+        </ol>
+        
+        <h4 style="margin-top: 20px;">Проверка для всех дней:</h4>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <th style="background: #3498db; color: white; padding: 5px;">День</th>
+                <th style="background: #3498db; color: white; padding: 5px;">Позиция</th>
+                <th style="background: #3498db; color: white; padding: 5px;">Формула</th>
+                <th style="background: #3498db; color: white; padding: 5px;">Номер</th>
+            </tr>
+            <tr><td>MON</td><td>1</td><td>(1+2)/3</td><td>1</td></tr>
+            <tr><td>TUE</td><td>4</td><td>(4+2)/3</td><td>2</td></tr>
+            <tr><td>WED</td><td>7</td><td>(7+2)/3</td><td>3</td></tr>
+            <tr><td>THU</td><td>10</td><td>(10+2)/3</td><td>4</td></tr>
+            <tr><td>FRI</td><td>13</td><td>(13+2)/3</td><td>5</td></tr>
+            <tr><td>SAT</td><td>16</td><td>(16+2)/3</td><td>6</td></tr>
+            <tr><td>SUN</td><td>19</td><td>(19+2)/3</td><td>7</td></tr>
+        </table>
+    </div>
+    
+    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+        <h4>📸 Для отчета:</h4>
+        <ol>
+            <li><strong>Скриншот 2.6а</strong> - Выполнение запроса в SQL*Plus</li>
+            <li><strong>Скриншот 2.6б</strong> - Результат с номером дня</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

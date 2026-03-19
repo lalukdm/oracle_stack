@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Задание 2.5{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px;">
+    <h1>🔄 Задание 2.5: Обмен значениями первичных ключей</h1>
+    <p>Исправление ошибки оператора: поменять местами employee_id 194 и 195</p>
+    
+    <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
+        <strong>Условие:</strong> Есть доступ только к полю employee_id (первичный ключ). 
+        Необходимо одним SQL-запросом поменять значения 194 и 195 местами.
+    </div>
+    
+    <form method="post" style="margin: 20px 0;">
+        <button type="submit" name="action" value="create" style="padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+            1. Создать тестовую таблицу T2
+        </button>
+        <button type="submit" name="action" value="show" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+            2. Показать текущие данные
+        </button>
+        <button type="submit" name="action" value="swap" style="padding: 10px 20px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            3. Выполнить обмен (194 ↔ 195)
+        </button>
+    </form>
+    
+    {% if error %}
+    <div style="color: red; margin-top: 20px;">{{ error }}</div>
+    {% endif %}
+    
+    {% if message %}
+    <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-top: 20px;">
+        {{ message }}
+    </div>
+    {% endif %}
+    
+    {% if data %}
+    <h3>Данные в таблице T2:</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr>
+            <th style="background: #3498db; color: white; padding: 10px;">RowID</th>
+            <th style="background: #3498db; color: white; padding: 10px;">N</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Статус</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.rowid }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; 
+                {% if row.n == 194 %}background: #ffd700;
+                {% elif row.n == 195 %}background: #87ceeb;
+                {% endif %}">
+                <strong>{{ row.n }}</strong>
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">
+                {% if row.n == 194 %}🔵 Было 194
+                {% elif row.n == 195 %}🟡 Было 195
+                {% else %}Обычная запись{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    
+    <div style="margin-top: 30px; background: #f4f4f4; padding: 15px; border-radius: 4px;">
+        <h4>Решение одним SQL-запросом:</h4>
+        <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px;">
+UPDATE employees 
+SET employee_id = DECODE(employee_id, 194, 195, 195, 194) 
+WHERE employee_id IN (194, 195);</pre>
+        
+        <h4 style="margin-top: 20px;">Объяснение:</h4>
+        <ul>
+            <li><strong>DECODE(employee_id, 194, 195, 195, 194)</strong> - если значение 194, ставим 195; если 195, ставим 194</li>
+            <li><strong>WHERE employee_id IN (194, 195)</strong> - применяем только к нужным записям</li>
+            <li>Операция выполняется атомарно, без промежуточных состояний</li>
+        </ul>
+    </div>
+    
+    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+        <h4>📸 Для отчета:</h4>
+        <ol>
+            <li><strong>Скриншот 2.5а</strong> - Данные ДО обмена (194 и 195 выделены цветом)</li>
+            <li><strong>Скриншот 2.5б</strong> - Выполнение запроса UPDATE</li>
+            <li><strong>Скриншот 2.5в</strong> - Данные ПОСЛЕ обмена (значения поменялись местами)</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

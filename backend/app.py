@@ -1,11 +1,16 @@
 import os
-from flask import Flask, jsonify, request, render_template, redirect, url_for, session
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session, Response
 from datetime import datetime
 import oracledb
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import io
+from io import TextIOWrapper, StringIO
 import sys
+import csv
+
+
+
 # --- Инициализация Oracle client (thick mode) ---
 oracledb.init_oracle_client(lib_dir="/opt/oracle/instantclient")
 
@@ -2625,6 +2630,883 @@ def hr_verify():
             connection.close()
     
     return render_template('hr_verify.html', results=results)
+
+
+# =====================================================================
+# СЕМИНАР 6 - Подсистема ввода/вывода
+# =====================================================================
+
+@app.route("/seminar6")
+def seminar6_index():
+    """Главная страница семинара 6"""
+    return render_template("seminar6/index.html")
+
+@app.route("/seminar6/task1_1", methods=["GET", "POST"])
+@login_required
+def seminar6_task1_1():
+    """Семинар 6, задание 1.1 - Ввод данных SQL скриптами"""
+    results = None
+    error = None
+    sql_script = ""
+    
+    if request.method == "POST":
+        action = request.form.get("action")
+        
+        if action == "example":
+            sql_script = """-- Заполнение справочника клиентов
+                            INSERT INTO asu_clients (client_id, client_name, contact_person, phone, email, priority)
+                            VALUES (seq_client_id.NEXTVAL, 'ООО "Ромашка"', 'Иванов Иван', '+7(495)111-22-33', 'ivanov@romashka.ru', 1);
+
+                            INSERT INTO asu_clients (client_id, client_name, contact_person, phone, email, priority)
+                            VALUES (seq_client_id.NEXTVAL, 'АО "ТехноСервис"', 'Петров Петр', '+7(495)222-33-44', 'petrov@ts.ru', 2);
+
+                            SELECT * FROM asu_clients;"""
+            
+        elif action == "execute":
+            sql_script = request.form.get("sql_script", "").strip()
+            
+            if sql_script:
+                try:
+                    conn = get_db_connection()
+                    cur = conn.cursor()
+                    
+                    statements = [s.strip() for s in sql_script.split(';') if s.strip()]
+                    
+                    last_result = None
+                    for stmt in statements:
+                        cur.execute(stmt)
+                        if stmt.strip().upper().startswith('SELECT'):
+                            rows = cur.fetchall()
+                            if rows:
+                                columns = [desc[0] for desc in cur.description]
+                                data = []
+                                for row in rows:
+                                    row_dict = {}
+                                    for i, col in enumerate(columns):
+                                        row_dict[col] = row[i]
+                                    data.append(row_dict)
+                                last_result = {
+                                    'columns': columns,
+                                    'data': data,
+                                    'rowcount': len(data)
+                                }
+                        else:
+                            conn.commit()
+                            last_result = {
+                                'rowcount': cur.rowcount
+                            }
+                    
+                    results = last_result
+                    conn.commit()
+                    cur.close()
+                    conn.close()
+                    
+                except Exception as e:
+                    error = str(e)
+                    if conn:
+                        conn.rollback()
+    
+    return render_template("seminar6/task1_1.html", 
+                         results=results, 
+                         error=error,
+                         sql_script=sql_script)
+
+@app.route("/seminar6/task1_2", methods=["GET"])
+def seminar6_task1_2():
+    """Главная страница задания 1.2"""
+    view = request.args.get('view', 'clients')
+    view_data = None
+    view_columns = []
+    view_title = ""
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        if view == 'clients':
+            cur.execute("SELECT client_id, client_name, contact_person, phone, email, priority FROM asu_clients ORDER BY client_id")
+            rows = cur.fetchall()
+            view_columns = ['ID', 'Название', 'Контактное лицо', 'Телефон', 'Email', 'Приоритет']
+            view_data = []
+            for row in rows:
+                view_data.append({
+                    'ID': row[0],
+                    'Название': row[1],
+                    'Контактное лицо': row[2] or '',
+                    'Телефон': row[3] or '',
+                    'Email': row[4] or '',
+                    'Приоритет': row[5]
+                })
+            view_title = "Список клиентов"
+            
+        elif view == 'employees':
+            cur.execute("SELECT employee_id, first_name, last_name, position, department, email, phone, salary FROM asu_employees ORDER BY employee_id")
+            rows = cur.fetchall()
+            view_columns = ['ID', 'Имя', 'Фамилия', 'Должность', 'Отдел', 'Email', 'Телефон', 'Оклад']
+            view_data = []
+            for row in rows:
+                view_data.append({
+                    'ID': row[0],
+                    'Имя': row[1],
+                    'Фамилия': row[2],
+                    'Должность': row[3] or '',
+                    'Отдел': row[4] or '',
+                    'Email': row[5] or '',
+                    'Телефон': row[6] or '',
+                    'Оклад': row[7] or ''
+                })
+            view_title = "Список сотрудников"
+            
+        elif view == 'projects':
+            cur.execute("""
+                SELECT p.project_id, p.project_name, c.client_name, p.status, p.priority 
+                FROM asu_projects p 
+                LEFT JOIN asu_clients c ON p.client_id = c.client_id 
+                ORDER BY p.project_id
+            """)
+            rows = cur.fetchall()
+            view_columns = ['ID', 'Проект', 'Клиент', 'Статус', 'Приоритет']
+            view_data = []
+            for row in rows:
+                view_data.append({
+                    'ID': row[0],
+                    'Проект': row[1],
+                    'Клиент': row[2] or '',
+                    'Статус': row[3] or '',
+                    'Приоритет': row[4]
+                })
+            view_title = "Список проектов"
+        
+        cur.close()
+        conn.close()
+        
+    except Exception as e:
+        print(f"Error: {e}")
+    
+    return render_template("seminar6/task1_2.html", 
+                         view_data=view_data, 
+                         view_columns=view_columns,
+                         view_title=view_title)
+
+@app.route("/seminar6/task1_2/add_client", methods=["POST"])
+def seminar6_add_client():
+    """Добавление нового клиента"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            INSERT INTO asu_clients (client_id, client_name, contact_person, phone, email, priority)
+            VALUES (seq_client_id.NEXTVAL, :1, :2, :3, :4, :5)
+        """, (
+            request.form['client_name'],
+            request.form.get('contact_person', ''),
+            request.form.get('phone', ''),
+            request.form.get('email', ''),
+            int(request.form['priority'])
+        ))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return render_template("seminar6/task1_2.html", 
+                             success_message="Клиент успешно добавлен!")
+        
+    except Exception as e:
+        return render_template("seminar6/task1_2.html", 
+                             error_message=str(e))
+
+@app.route("/seminar6/task1_2/add_employee", methods=["POST"])
+def seminar6_add_employee():
+    """Добавление нового сотрудника"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            INSERT INTO asu_employees (employee_id, first_name, last_name, position, department, email, phone, salary)
+            VALUES (seq_employee_id.NEXTVAL, :1, :2, :3, :4, :5, :6, :7)
+        """, (
+            request.form['first_name'],
+            request.form['last_name'],
+            request.form.get('position', ''),
+            request.form['department'],
+            request.form.get('email', ''),
+            request.form.get('phone', ''),
+            int(request.form['salary']) if request.form.get('salary') else None
+        ))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return render_template("seminar6/task1_2.html", 
+                             success_message="Сотрудник успешно добавлен!")
+        
+    except Exception as e:
+        return render_template("seminar6/task1_2.html", 
+                             error_message=str(e))
+
+@app.route("/seminar6/task1_3", methods=["GET"])
+def seminar6_task1_3():
+    return redirect(url_for('seminar1_task3_login'))
+
+@app.route("/seminar6/task1_4", methods=["GET"])
+def seminar6_task1_4():
+    """Страница загрузки данных из файла"""
+    success = request.args.get('success', '')
+    error = request.args.get('error', '')
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Получаем статистику
+        cur.execute("SELECT COUNT(*) FROM asu_clients")
+        clients_count = cur.fetchone()[0]
+        
+        cur.execute("SELECT COUNT(*) FROM asu_employees")
+        employees_count = cur.fetchone()[0]
+        
+        cur.execute("SELECT COUNT(*) FROM asu_projects")
+        projects_count = cur.fetchone()[0]
+        
+        cur.execute("SELECT COUNT(*) FROM asu_test_cases")
+        testcases_count = cur.fetchone()[0]
+        
+        cur.execute("SELECT COUNT(*) FROM asu_defects")
+        defects_count = cur.fetchone()[0]
+        
+        cur.close()
+        conn.close()
+        
+        stats = {
+            'clients': clients_count,
+            'employees': employees_count,
+            'projects': projects_count,
+            'testcases': testcases_count,
+            'defects': defects_count
+        }
+        
+    except Exception as e:
+        stats = {'clients': 0, 'employees': 0, 'projects': 0, 'testcases': 0, 'defects': 0}
+    
+    return render_template("seminar6/task1_4.html", 
+                         stats=stats, 
+                         success=success,
+                         error=error)
+
+@app.route("/seminar6/task1_4/upload", methods=["POST"])
+def seminar6_upload_file():
+    """Обработка загруженного файла"""
+    if 'data_file' not in request.files:
+        return redirect(url_for('seminar6_task1_4', error="Файл не выбран"))
+    
+    file = request.files['data_file']
+    
+    if file.filename == '':
+        return redirect(url_for('seminar6_task1_4', error="Файл не выбран"))
+    
+    if not (file.filename.endswith('.csv') or file.filename.endswith('.txt')):
+        return redirect(url_for('seminar6_task1_4', error="Неверный формат файла. Используйте .csv или .txt"))
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Читаем CSV файл
+        csv_file = TextIOWrapper(file, encoding='utf-8')
+        reader = csv.DictReader(csv_file)
+        
+        # Определяем тип данных по заголовкам
+        headers = reader.fieldnames
+        
+        if headers and 'client_name' in headers:
+            # Импорт клиентов
+            count = 0
+            for row in reader:
+                cur.execute("""
+                    INSERT INTO asu_clients (client_id, client_name, contact_person, phone, email, priority)
+                    VALUES (seq_client_id.NEXTVAL, :1, :2, :3, :4, :5)
+                """, (
+                    row['client_name'],
+                    row.get('contact_person', ''),
+                    row.get('phone', ''),
+                    row.get('email', ''),
+                    int(row.get('priority', 3))
+                ))
+                count += 1
+            conn.commit()
+            success = f"✅ Успешно импортировано {count} клиентов"
+            
+        elif headers and 'first_name' in headers and 'last_name' in headers:
+            # Импорт сотрудников
+            count = 0
+            for row in reader:
+                cur.execute("""
+                    INSERT INTO asu_employees (employee_id, first_name, last_name, position, department, email, phone, salary)
+                    VALUES (seq_employee_id.NEXTVAL, :1, :2, :3, :4, :5, :6, :7)
+                """, (
+                    row['first_name'],
+                    row['last_name'],
+                    row.get('position', ''),
+                    row.get('department', 'TESTING'),
+                    row.get('email', ''),
+                    row.get('phone', ''),
+                    int(row.get('salary', 0)) if row.get('salary') else None
+                ))
+                count += 1
+            conn.commit()
+            success = f"✅ Успешно импортировано {count} сотрудников"
+            
+        else:
+            cur.close()
+            conn.close()
+            return redirect(url_for('seminar6_task1_4', 
+                                   error="Не удалось определить тип данных. Проверьте заголовки CSV файла"))
+        
+        cur.close()
+        conn.close()
+        
+        # Перенаправляем на страницу с сообщением об успехе
+        return redirect(url_for('seminar6_task1_4', success=success))
+        
+    except Exception as e:
+        return redirect(url_for('seminar6_task1_4', 
+                               error=f"Ошибка при импорте: {str(e)}"))
+
+@app.route("/seminar6/task1_5", methods=["GET"])
+def seminar6_task1_5():
+    """Страница эмуляции сканера штрих-кодов"""
+    return render_template("seminar6/task1_5.html")
+
+@app.route("/seminar6/task2_1", methods=["GET", "POST"])
+def seminar6_task2_1():
+    """Задание 2.1 - Иерархический отчет"""
+    results = None
+    error = None
+    
+    if request.method == "POST":
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            cur.execute("""
+                SELECT 
+                    LPAD(' ', 2 * (LEVEL - 1), '.') || LAST_NAME AS employee,
+                    SYS_CONNECT_BY_PATH(LAST_NAME, '/') AS hierarchy
+                FROM HR.EMPLOYEES
+                START WITH LAST_NAME = 'Kochhar'
+                CONNECT BY PRIOR EMPLOYEE_ID = MANAGER_ID
+                ORDER SIBLINGS BY LAST_NAME
+            """)
+            
+            rows = cur.fetchall()
+            results = [{'employee': r[0], 'hierarchy': r[1]} for r in rows]
+            
+            cur.close()
+            conn.close()
+            
+        except Exception as e:
+            error = str(e)
+    
+    return render_template("seminar6/task2_1.html", results=results, error=error)
+
+@app.route("/seminar6/task2_2", methods=["GET", "POST"])
+def seminar6_task2_2():
+    """Задание 2.2 - Отчет Больше среднего"""
+    results = None
+    error = None
+    
+    if request.method == "POST":
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            query = """
+                SELECT 
+                    e1.LAST_NAME AS employee,
+                    e1.SALARY,
+                    e2.LAST_NAME AS colleague,
+                    e2.SALARY AS colleague_salary,
+                    e1.DEPARTMENT_ID,
+                    ROUND(AVG(e1.SALARY) OVER(PARTITION BY e1.DEPARTMENT_ID), 2) AS avg_salary
+                FROM HR.EMPLOYEES e1
+                JOIN HR.EMPLOYEES e2 ON e1.DEPARTMENT_ID = e2.DEPARTMENT_ID
+                WHERE e1.DEPARTMENT_ID IN (60, 80)
+                    AND e1.SALARY > (SELECT AVG(SALARY) FROM HR.EMPLOYEES WHERE DEPARTMENT_ID = e1.DEPARTMENT_ID)
+                    AND e2.SALARY > e1.SALARY
+                ORDER BY e1.DEPARTMENT_ID, e1.SALARY DESC, e1.LAST_NAME, e2.SALARY DESC
+            """
+            
+            cur.execute(query)
+            rows = cur.fetchall()
+            
+            results = []
+            for row in rows:
+                results.append({
+                    'employee': row[0],
+                    'salary': row[1],
+                    'colleague': row[2],
+                    'colleague_salary': row[3],
+                    'department': row[4],
+                    'avg_salary': row[5]
+                })
+            
+            cur.close()
+            conn.close()
+            
+        except Exception as e:
+            error = str(e)
+    
+    return render_template("seminar6/task2_2.html", results=results, error=error)
+
+@app.route("/seminar6/task2_3", methods=["GET", "POST"])
+def seminar6_task2_3():
+    """Задание 2.3 - Размножение строк"""
+    if request.method == "POST":
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Создаем таблицу и заполняем данными
+            cur.execute("BEGIN EXECUTE IMMEDIATE 'DROP TABLE EMP_SELECTED'; EXCEPTION WHEN OTHERS THEN NULL; END;")
+            
+            cur.execute("""
+                CREATE TABLE EMP_SELECTED (
+                    First_name VARCHAR2(20) NOT NULL,
+                    Last_name VARCHAR2(20) NOT NULL,
+                    N INTEGER NOT NULL
+                )
+            """)
+            
+            cur.execute("INSERT INTO EMP_SELECTED VALUES('Ellen', 'ABEL', 3)")
+            cur.execute("INSERT INTO EMP_SELECTED VALUES('Matthew', 'WEISS', 5)")
+            conn.commit()
+            
+            # Запрос из методички
+            query = """
+                SELECT 
+                    ROW_NUMBER() OVER(ORDER BY Last_name, First_name) AS "Сквозной №",
+                    ROW_NUMBER() OVER(PARTITION BY Last_name, First_name ORDER BY Last_name, First_name) AS "№ в группе",
+                    First_name AS "Имя",
+                    Last_name AS "Фамилия"
+                FROM EMP_SELECTED,
+                    (SELECT LEVEL Lev FROM DUAL 
+                     CONNECT BY LEVEL <= (SELECT MAX(N) FROM EMP_SELECTED))
+                WHERE Lev <= N
+                ORDER BY Last_name, First_name
+            """
+            
+            cur.execute(query)
+            rows = cur.fetchall()
+            
+            results = [{
+                'num': r[0],
+                'group_num': r[1],
+                'first': r[2],
+                'last': r[3]
+            } for r in rows]
+            
+            cur.close()
+            conn.close()
+            
+            return render_template("seminar6/task2_3.html", 
+                                 results=results,
+                                 sql=query)
+            
+        except Exception as e:
+            return render_template("seminar6/task2_3.html", error=str(e))
+    
+    return render_template("seminar6/task2_3.html")
+
+@app.route("/seminar6/task2_4", methods=["GET", "POST"])
+def seminar6_task2_4():
+    """Задание 2.4 - Выборка зарплат и экспорт в разные форматы"""
+    if request.method == "POST":
+        format_type = request.form.get('format')
+        
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # SQL запрос из задания
+            query = """
+                SELECT Salary, Hire_Date FROM (
+                    SELECT Salary, MAX(Hire_Date) as Hire_Date 
+                    FROM (
+                        SELECT Hire_Date, Salary 
+                        FROM (
+                            SELECT Hire_Date, Salary 
+                            FROM HR.EMPLOYEES 
+                            ORDER BY Hire_Date DESC, Salary DESC
+                        ) 
+                        WHERE ROWNUM <= 50
+                    )
+                    GROUP BY Salary 
+                    ORDER BY 2 DESC
+                )
+                WHERE ROWNUM < 20
+            """
+            
+            cur.execute(query)
+            rows = cur.fetchall()
+            cur.close()
+            conn.close()
+            
+            # Формируем данные для ответа
+            if format_type == 'csv':
+                # CSV формат
+                output = StringIO()
+                writer = csv.writer(output, delimiter=';')
+                writer.writerow(['Salary', 'Hire_Date'])
+                for row in rows:
+                    writer.writerow([row[0], row[1].strftime('%Y-%m-%d') if row[1] else ''])
+                
+                return Response(
+                    output.getvalue(),
+                    mimetype='text/csv',
+                    headers={'Content-Disposition': 'attachment; filename=salaries.csv'}
+                )
+                
+            elif format_type == 'excel':
+                # XLS (CSV с другим расширением)
+                output = StringIO()
+                output.write('Salary\tHire_Date\n')
+                for row in rows:
+                    output.write(f"{row[0]}\t{row[1].strftime('%Y-%m-%d') if row[1] else ''}\n")
+                
+                return Response(
+                    output.getvalue(),
+                    mimetype='application/vnd.ms-excel',
+                    headers={'Content-Disposition': 'attachment; filename=salaries.xls'}
+                )
+                
+            else:
+                # HTML отображение
+                results = [{'salary': r[0], 'hire_date': r[1].strftime('%Y-%m-%d') if r[1] else ''} for r in rows]
+                return render_template("seminar6/task2_4.html", results=results, sql=query)
+                
+        except Exception as e:
+            return render_template("seminar6/task2_4.html", error=str(e))
+    
+    return render_template("seminar6/task2_4.html")
+
+@app.route("/seminar6/task2_4a", methods=["GET", "POST"])
+def seminar6_task2_4a():
+    """Задание 2.4а - Вывод с штрихкодами"""
+    if request.method == "POST":
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # SQL запрос из задания 2.4
+            query = """
+                SELECT Salary, Hire_Date FROM (
+                    SELECT Salary, MAX(Hire_Date) as Hire_Date 
+                    FROM (
+                        SELECT Hire_Date, Salary 
+                        FROM (
+                            SELECT Hire_Date, Salary 
+                            FROM HR.EMPLOYEES 
+                            ORDER BY Hire_Date DESC, Salary DESC
+                        ) 
+                        WHERE ROWNUM <= 50
+                    )
+                    GROUP BY Salary 
+                    ORDER BY 2 DESC
+                )
+                WHERE ROWNUM < 20
+            """
+            
+            cur.execute(query)
+            rows = cur.fetchall()
+            cur.close()
+            conn.close()
+            
+            results = [{
+                'salary': r[0],
+                'hire_date': r[1].strftime('%Y-%m-%d') if r[1] else ''
+            } for r in rows]
+            
+            return render_template("seminar6/task2_4a.html", 
+                                 results=results, 
+                                 sql=query)
+            
+        except Exception as e:
+            return render_template("seminar6/task2_4a.html", error=str(e))
+    
+    return render_template("seminar6/task2_4a.html")
+
+@app.route("/seminar6/task2_5", methods=["GET", "POST"])
+def seminar6_task2_5():
+    """Задание 2.5 - Обмен значениями первичных ключей"""
+    data = None
+    message = None
+    error = None
+    
+    if request.method == "POST":
+        action = request.form.get('action')
+        
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            if action == "create":
+                # Создаем тестовую таблицу T2
+                cur.execute("BEGIN EXECUTE IMMEDIATE 'DROP TABLE T2'; EXCEPTION WHEN OTHERS THEN NULL; END;")
+                
+                cur.execute("""
+                    CREATE TABLE T2 (
+                        N INTEGER PRIMARY KEY
+                    )
+                """)
+                
+                # Заполняем данными 190-200 для наглядности
+                for i in range(190, 201):
+                    if i not in [194, 195]:  # Пропускаем 194 и 195, добавим отдельно
+                        cur.execute("INSERT INTO T2 VALUES (:1)", [i])
+                
+                # Добавляем 194 и 195 с задержкой для наглядности
+                cur.execute("INSERT INTO T2 VALUES (194)")
+                cur.execute("INSERT INTO T2 VALUES (195)")
+                conn.commit()
+                
+                message = "✅ Таблица T2 создана и заполнена данными (190-200)"
+                
+            elif action == "show":
+                # Показываем данные
+                cur.execute("SELECT ROWID, N FROM T2 WHERE N BETWEEN 190 AND 200 ORDER BY N")
+                rows = cur.fetchall()
+                
+                data = [{'rowid': str(r[0]), 'n': r[1]} for r in rows]
+                
+            elif action == "swap":
+                # Выполняем обмен значениями 194 и 195
+                cur.execute("""
+                    UPDATE T2 
+                    SET N = DECODE(N, 194, 195, 195, 194) 
+                    WHERE N IN (194, 195)
+                """)
+                conn.commit()
+                
+                # Показываем обновленные данные
+                cur.execute("SELECT ROWID, N FROM T2 WHERE N BETWEEN 190 AND 200 ORDER BY N")
+                rows = cur.fetchall()
+                
+                data = [{'rowid': str(r[0]), 'n': r[1]} for r in rows]
+                message = "✅ Обмен выполнен: 194 и 195 поменялись местами"
+            
+            cur.close()
+            conn.close()
+            
+        except Exception as e:
+            error = str(e)
+    
+    return render_template("seminar6/task2_5.html", data=data, message=message, error=error)
+
+@app.route("/seminar6/task2_6", methods=["GET", "POST"])
+def seminar6_task2_6():
+    """Задание 2.6 - Номер дня недели"""
+    result = None
+    error = None
+    
+    if request.method == "POST":
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            # Получаем текущую дату
+            cur.execute("SELECT TO_CHAR(SYSDATE, 'DD.MM.YYYY') FROM DUAL")
+            current_date = cur.fetchone()[0]
+            
+            # Получаем название дня на английском
+            cur.execute("SELECT TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE = AMERICAN') FROM DUAL")
+            day_name = cur.fetchone()[0]
+            
+            # Вычисляем номер дня (пн=1)
+            cur.execute("""
+                SELECT (INSTR('MONTUEWEDTHUFRISATSUN', 
+                             TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE = AMERICAN')) + 2) / 3 
+                FROM DUAL
+            """)
+            day_number = cur.fetchone()[0]
+            
+            cur.close()
+            conn.close()
+            
+            result = {
+                'current_date': current_date,
+                'day_name': day_name,
+                'day_number': int(day_number)
+            }
+            
+        except Exception as e:
+            error = str(e)
+    
+    return render_template("seminar6/task2_6.html", result=result, error=error)
+
+@app.route("/seminar6/task2_7", methods=["GET", "POST"])
+def seminar6_task2_7():
+    """Задание 2.7 - Отчет с ROLLUP"""
+    results = None
+    error = None
+    
+    if request.method == "POST":
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            query = """
+                SELECT 
+                    CASE 
+                        WHEN GROUPING(e.MANAGER_ID) = 1 AND GROUPING(e.JOB_ID) = 1 THEN NULL
+                        WHEN GROUPING(e.JOB_ID) = 1 THEN e.MANAGER_ID
+                        ELSE e.MANAGER_ID
+                    END AS manager_id,
+                    CASE 
+                        WHEN GROUPING(e.JOB_ID) = 1 THEN NULL
+                        ELSE e.JOB_ID
+                    END AS job_id,
+                    COUNT(*) AS emp_count,
+                    ROUND(SUM(e.SALARY + NVL(e.COMMISSION_PCT, 0) * e.SALARY), 2) AS total_payment,
+                    CASE 
+                        WHEN GROUPING(e.MANAGER_ID) = 1 AND GROUPING(e.JOB_ID) = 1 THEN 'GRAND TOTAL'
+                        WHEN GROUPING(e.JOB_ID) = 1 THEN 'MANAGER TOTAL'
+                        ELSE 'DETAIL'
+                    END AS row_type
+                FROM HR.EMPLOYEES e
+                WHERE e.MANAGER_ID IS NOT NULL
+                GROUP BY ROLLUP (e.MANAGER_ID, e.JOB_ID)
+                ORDER BY 
+                    CASE WHEN e.MANAGER_ID IS NULL THEN 999999 ELSE e.MANAGER_ID END,
+                    CASE WHEN e.JOB_ID IS NULL THEN 999999 ELSE 1 END
+            """
+            
+            cur.execute(query)
+            rows = cur.fetchall()
+            
+            results = []
+            for row in rows:
+                results.append({
+                    'manager_id': row[0],
+                    'job_id': row[1],
+                    'emp_count': row[2],
+                    'total_payment': row[3],
+                    'type': row[4]
+                })
+            
+            cur.close()
+            conn.close()
+            
+        except Exception as e:
+            error = str(e)
+    
+    return render_template("seminar6/task2_7.html", results=results, error=error)
+
+@app.route("/seminar6/task2_8", methods=["GET", "POST"])
+def seminar6_task2_8():
+    """Задание 2.8 - Отчет по руководителям с итогами"""
+    results = None
+    error = None
+    
+    if request.method == "POST":
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            query = """
+                WITH manager_payments AS (
+                    SELECT 
+                        m.EMPLOYEE_ID AS manager_id,
+                        m.FIRST_NAME || ' ' || m.LAST_NAME AS manager_name,
+                        m.JOB_ID AS manager_job,
+                        e.EMPLOYEE_ID AS emp_id,
+                        e.JOB_ID AS emp_job,
+                        e.SALARY + NVL(e.COMMISSION_PCT, 0) * e.SALARY AS payment
+                    FROM HR.EMPLOYEES e
+                    JOIN HR.EMPLOYEES m ON e.MANAGER_ID = m.EMPLOYEE_ID
+                    WHERE e.MANAGER_ID IS NOT NULL
+                ),
+                job_titles AS (
+                    SELECT JOB_ID, JOB_TITLE FROM HR.JOBS
+                )
+                SELECT 
+                    CASE 
+                        WHEN GROUPING(mp.manager_id) = 1 THEN '...О Б Щ И Й'
+                        WHEN GROUPING(mp.emp_job) = 1 THEN '...' || mp.manager_name || ' итоги:'
+                        ELSE mp.manager_name
+                    END AS manager_name,
+                    CASE 
+                        WHEN GROUPING(mp.manager_id) = 1 THEN ''
+                        WHEN GROUPING(mp.emp_job) = 1 THEN (SELECT JOB_TITLE FROM job_titles WHERE JOB_ID = mp.manager_job)
+                        ELSE (SELECT JOB_TITLE FROM job_titles WHERE JOB_ID = mp.emp_job)
+                    END AS job_title,
+                    COUNT(mp.emp_id) AS emp_count,
+                    ROUND(SUM(mp.payment), 2) AS total_payment,
+                    CASE 
+                        WHEN GROUPING(mp.manager_id) = 1 THEN 'GRAND TOTAL'
+                        WHEN GROUPING(mp.emp_job) = 1 THEN 'MANAGER TOTAL'
+                        ELSE 'DETAIL'
+                    END AS row_type
+                FROM manager_payments mp
+                GROUP BY ROLLUP (mp.manager_id, mp.manager_name, mp.manager_job, mp.emp_job)
+                HAVING GROUPING(mp.manager_id) = 1 
+                    OR GROUPING(mp.emp_job) = 1 
+                    OR (GROUPING(mp.manager_id) = 0 AND GROUPING(mp.emp_job) = 0)
+                ORDER BY 
+                    CASE WHEN mp.manager_id IS NULL THEN 999999 ELSE mp.manager_id END,
+                    CASE WHEN mp.emp_job IS NULL THEN 999999 ELSE 1 END
+            """
+            
+            cur.execute(query)
+            rows = cur.fetchall()
+            
+            results = []
+            for row in rows:
+                results.append({
+                    'manager_name': row[0],
+                    'job_title': row[1],
+                    'emp_count': row[2],
+                    'total_payment': row[3],
+                    'type': row[4]
+                })
+            
+            cur.close()
+            conn.close()
+            
+        except Exception as e:
+            error = str(e)
+    
+    return render_template("seminar6/task2_8.html", results=results, error=error)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

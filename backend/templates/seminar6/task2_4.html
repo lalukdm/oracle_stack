@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Задание 2.4{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px;">
+    <h1>📊 Задание 2.4: Выборка зарплат</h1>
+    <p>Не более 19 различных зарплат среди 50 самых новых сотрудников</p>
+    
+    <div style="margin: 20px 0;">
+        <form method="post" style="display: inline;">
+            <button type="submit" name="format" value="html" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Показать на экране
+            </button>
+        </form>
+        <form method="post" style="display: inline; margin-left: 10px;">
+            <button type="submit" name="format" value="csv" style="padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Скачать CSV
+            </button>
+        </form>
+        <form method="post" style="display: inline; margin-left: 10px;">
+            <button type="submit" name="format" value="excel" style="padding: 10px 20px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Скачать Excel (XLS)
+            </button>
+        </form>
+    </div>
+    
+    {% if error %}
+    <div style="color: red; margin-top: 20px;">{{ error }}</div>
+    {% endif %}
+    
+    {% if results %}
+    <h3>Результат выборки ({{ results|length }} различных зарплат):</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr>
+            <th style="background: #3498db; color: white; padding: 10px;">№</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Зарплата</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Дата приема</th>
+        </tr>
+        {% for row in results %}
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ loop.index }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.salary }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.hire_date }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    
+    {% if sql %}
+    <div style="margin-top: 30px; background: #f4f4f4; padding: 15px; border-radius: 4px;">
+        <h4>SQL запрос:</h4>
+        <pre style="overflow-x: auto;">{{ sql }}</pre>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Задание 2.1{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px;">
+    <h1>📊 Задание 2.1: Иерархический отчет</h1>
+    <p>Подчиненные вице-президента Neena Kochhar</p>
+    
+    <form method="post">
+        <button type="submit" name="action" value="execute" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Выполнить запрос
+        </button>
+    </form>
+    
+    {% if error %}
+    <div style="color: red; margin-top: 20px;">{{ error }}</div>
+    {% endif %}
+    
+    {% if results %}
+    <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+        <tr>
+            <th style="background: #3498db; color: white; padding: 10px;">Сотрудник</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Иерархия</th>
+        </tr>
+        {% for row in results %}
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.employee }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.hierarchy }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</div>
+{% endblock %}

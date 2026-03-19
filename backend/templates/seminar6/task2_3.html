@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Задание 2.3{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px;">
+    <h1>📊 Задание 2.3: Размножение строк</h1>
+    
+    <div style="background: #e8f4f8; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0;">
+        <strong>Исходные данные:</strong><br>
+        Ellen ABEL × 3<br>
+        Matthew WEISS × 5
+    </div>
+    
+    <form method="post">
+        <button type="submit" name="action" value="run" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Выполнить запрос
+        </button>
+    </form>
+    
+    {% if error %}
+    <div style="color: red; margin-top: 20px;">{{ error }}</div>
+    {% endif %}
+    
+    {% if results %}
+    <h3>Результат:</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr>
+            <th style="background: #3498db; color: white; padding: 10px;">Сквозной №</th>
+            <th style="background: #3498db; color: white; padding: 10px;">№ в группе</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Имя</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Фамилия</th>
+        </tr>
+        {% for row in results %}
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.num }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.group_num }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.first }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.last }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><em>Всего строк: {{ results|length }} (3 + 5 = 8)</em></p>
+    {% endif %}
+    
+    {% if sql %}
+    <div style="margin-top: 30px; background: #f4f4f4; padding: 15px; border-radius: 4px;">
+        <h4>SQL запрос:</h4>
+        <pre style="overflow-x: auto;">{{ sql }}</pre>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

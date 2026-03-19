@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Задание 2.8{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px;">
+    <h1>📊 Задание 2.8: Отчет по руководителям с итогами</h1>
+    <p>Суммарные выплаты сотрудникам по руководителям и должностям</p>
+    
+    <form method="post" style="margin: 20px 0;">
+        <button type="submit" name="action" value="run" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Сформировать отчет
+        </button>
+    </form>
+    
+    {% if error %}
+    <div style="color: red; margin-top: 20px;">{{ error }}</div>
+    {% endif %}
+    
+    {% if results %}
+    <h3>Отчет по суммарным выплатам:</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr>
+            <th style="background: #3498db; color: white; padding: 10px;">Руководитель</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Должность</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Кол-во сотрудников</th>
+            <th style="background: #3498db; color: white; padding: 10px;">Суммарные выплаты</th>
+        </tr>
+        {% for row in results %}
+        <tr style="
+            {% if row.type == 'GRAND TOTAL' %}background: #2c3e50; color: white; font-weight: bold;
+            {% elif row.type == 'MANAGER TOTAL' %}background: #ecf0f1; font-weight: bold;
+            {% endif %}">
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; 
+                {% if row.type == 'MANAGER TOTAL' %}padding-left: 30px;{% endif %}
+                {% if row.type == 'GRAND TOTAL' %}padding-left: 50px;{% endif %}">
+                {{ row.manager_name }}
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.job_title }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.emp_count }}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ row.total_payment }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    
+    <div style="margin-top: 30px; background: #f4f4f4; padding: 15px; border-radius: 4px;">
+        <h4>SQL запрос:</h4>
+        <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto;">
+WITH manager_payments AS (
+    -- Сотрудники и их руководители
+    SELECT 
+        m.EMPLOYEE_ID AS manager_id,
+        m.FIRST_NAME || ' ' || m.LAST_NAME AS manager_name,
+        m.JOB_ID AS manager_job,
+        e.EMPLOYEE_ID AS emp_id,
+        e.JOB_ID AS emp_job,
+        e.SALARY + NVL(e.COMMISSION_PCT, 0) * e.SALARY AS payment
+    FROM HR.EMPLOYEES e
+    JOIN HR.EMPLOYEES m ON e.MANAGER_ID = m.EMPLOYEE_ID
+    WHERE e.MANAGER_ID IS NOT NULL
+),
+job_titles AS (
+    SELECT JOB_ID, JOB_TITLE FROM HR.JOBS
+)
+SELECT 
+    CASE 
+        WHEN GROUPING(mp.manager_id) = 1 THEN '...О Б Щ И Й'
+        WHEN GROUPING(mp.emp_job) = 1 THEN '...' || mp.manager_name || ' итоги:'
+        ELSE mp.manager_name
+    END AS manager_name,
+    CASE 
+        WHEN GROUPING(mp.manager_id) = 1 THEN ''
+        WHEN GROUPING(mp.emp_job) = 1 THEN (SELECT JOB_TITLE FROM job_titles WHERE JOB_ID = mp.manager_job)
+        ELSE (SELECT JOB_TITLE FROM job_titles WHERE JOB_ID = mp.emp_job)
+    END AS job_title,
+    COUNT(mp.emp_id) AS emp_count,
+    ROUND(SUM(mp.payment), 2) AS total_payment
+FROM manager_payments mp
+GROUP BY ROLLUP (mp.manager_id, mp.manager_name, mp.manager_job, mp.emp_job)
+HAVING GROUPING(mp.manager_id) = 1 
+    OR GROUPING(mp.emp_job) = 1 
+    OR (GROUPING(mp.manager_id) = 0 AND GROUPING(mp.emp_job) = 0)
+ORDER BY 
+    CASE WHEN mp.manager_id IS NULL THEN 999999 ELSE mp.manager_id END,
+    CASE WHEN mp.emp_job IS NULL THEN 999999 ELSE 1 END;</pre>
+        
+        <h4 style="margin-top: 20px;">Объяснение:</h4>
+        <ul>
+            <li><strong>WITH manager_payments</strong> - CTE, собирающее всех сотрудников с их руководителями</li>
+            <li><strong>job_titles</strong> - соответствие JOB_ID и JOB_TITLE</li>
+            <li><strong>GROUP BY ROLLUP</strong> - создает иерархию итогов</li>
+            <li><strong>CASE ... GROUPING()</strong> - определяет тип строки и форматирует вывод:
+                <ul>
+                    <li>Детальные строки: имя руководителя + название должности</li>
+                    <li>Итоги по руководителю: "... имя итоги:" + должность руководителя</li>
+                    <li>Общий итог: "...О Б Щ И Й" + пустая должность</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+        <h4>📸 Для отчета:</h4>
+        <ol>
+            <li><strong>Скриншот 2.8а</strong> - Выполнение запроса</li>
+            <li><strong>Скриншот 2.8б</strong> - Результат с отступами и итогами</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

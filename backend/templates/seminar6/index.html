@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Подсистема ввода/вывода{% endblock %}
+
+{% block content %}
+<style>
+    .seminar6-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+    }
+    .section {
+        margin: 30px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    .section h2 {
+        color: #34495e;
+        border-left: 4px solid #3498db;
+        padding-left: 15px;
+        margin-top: 0;
+    }
+    .task-list {
+        list-style: none;
+        padding: 0;
+    }
+    .task-item {
+        margin: 15px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .task-item:hover {
+        transform: translateX(5px);
+    }
+    .task-item a {
+        text-decoration: none;
+        color: #2c3e50;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    .task-item p {
+        margin: 5px 0 0;
+        color: #7f8c8d;
+        font-size: 0.9em;
+    }
+    .badge {
+        display: inline-block;
+        padding: 3px 8px;
+        background: #3498db;
+        color: white;
+        border-radius: 12px;
+        font-size: 0.8em;
+        margin-right: 10px;
+    }
+</style>
+
+<div class="seminar6-container">
+    <h1>📋 Семинар 6: Разработка подсистемы ввода/вывода</h1>
+    
+    <div class="section">
+        <h2>📥 Подсистема ввода данных</h2>
+        <div class="task-list">
+            <div class="task-item">
+                <span class="badge">1.1</span>
+                <a href="/seminar6/task1_1">Ввод данных посредством SQL скриптов</a>
+                <p>Заполнение справочников и связанных таблиц</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">1.2</span>
+                <a href="/seminar6/task1_2">Ввод данных через интерактивные формы</a>
+                <p>PHP формы для ввода данных в связанные таблицы</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">1.3</span>
+                <a href="/seminar6/task1_3">Ввод засекреченных данных</a>
+                <p>Модуль авторизации и защищенный ввод</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">1.4</span>
+                <a href="/seminar6/task1_4">Ввод данных из файла</a>
+                <p>Загрузка данных из текстового файла в БД</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">1.5</span>
+                <a href="/seminar6/task1_5">Ввод с внешних устройств</a>
+                <p>Эмуляция сканера штрих-кодов</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>📤 Подсистема вывода данных</h2>
+        <div class="task-grid">
+            <div class="task-item">
+                <span class="badge">2.1</span>
+                <a href="/seminar6/task2_1">Иерархический отчет</a>
+                <p>Отображение иерархии подчинения сотрудников</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">2.2</span>
+                <a href="/seminar6/task2_2">Отчет "Больше среднего"</a>
+                <p>Сотрудники с окладом выше среднего в отделе</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">2.3</span>
+                <a href="/seminar6/task2_3">Отчет с размножением строк</a>
+                <p>Генерация повторяющихся строк с нумерацией</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">2.4</span>
+                <a href="/seminar6/task2_4">Выборка зарплат</a>
+                <p>19 различных зарплат среди 50 новых сотрудников</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">2.4а</span>
+                <a href="/seminar6/task2_4a">Вывод со штрихкодами</a>
+                <p>Генерация настоящих штрихкодов для зарплат</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">2.5</span>
+                <a href="/seminar6/task2_5">Обмен значениями ключей</a>
+                <p>DECODE для замены employee_id 194 и 195</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">2.6</span>
+                <a href="/seminar6/task2_6">Номер дня недели</a>
+                <p>Собственное универсальное решение (пн=1, вс=7)</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">2.7</span>
+                <a href="/seminar6/task2_7">Отчет с ROLLUP</a>
+                <p>Суммарные выплаты по руководителям и должностям</p>
+            </div>
+            
+            <div class="task-item">
+                <span class="badge">2.8</span>
+                <a href="/seminar6/task2_8">Иерархия с итогами</a>
+                <p>Отчет по руководителям с отступами и итогами</p>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 30px; text-align: center; color: #7f8c8d;">
+        <p>Дата выполнения: 2026-03-19 | Студент: Иванов И.И.</p>
+    </div>
+</div>
+{% endblock %}

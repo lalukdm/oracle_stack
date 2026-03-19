@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Семинар 6 - Задание 1.4{% endblock %}
+
+{% block extra_head %}
+<style>
+    .task-container {
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 10px;
+    }
+    .upload-box {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 8px;
+        border: 2px dashed #3498db;
+        text-align: center;
+        margin: 30px 0;
+    }
+    .file-input {
+        display: none;
+    }
+    .file-label {
+        display: inline-block;
+        padding: 15px 30px;
+        background: #3498db;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px;
+    }
+    .file-label:hover {
+        background: #2980b9;
+    }
+    .file-name {
+        margin: 10px 0;
+        color: #2c3e50;
+        font-style: italic;
+    }
+    .btn {
+        padding: 12px 25px;
+        background: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px;
+    }
+    .btn:hover {
+        background: #229954;
+    }
+    .btn-secondary {
+        background: #95a5a6;
+    }
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+    .preview-table {
+        margin-top: 30px;
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    th {
+        background: #3498db;
+        color: white;
+        padding: 10px;
+        text-align: left;
+    }
+    td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+    tr:hover {
+        background: #f5f5f5;
+    }
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 20px 0;
+        border-left: 4px solid #27ae60;
+    }
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 20px 0;
+        border-left: 4px solid #e74c3c;
+    }
+    .example-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    pre {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 15px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-family: monospace;
+    }
+    .stats-box {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+    }
+    .stat-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        border-left: 4px solid #3498db;
+    }
+    .stat-number {
+        font-size: 36px;
+        font-weight: bold;
+        color: #3498db;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="task-container">
+    <h1>📁 Задание 1.4: Ввод данных из файла</h1>
+    
+    <div class="info" style="background: #e8f4f8; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0;">
+        <strong>Задание:</strong> Для модуля АСУ отдела тестирования ПО привести пример ввода 
+        данных из текстового файла в БД.
+    </div>
+    
+    {% if success %}
+    <div class="success-message">
+        {{ success }}
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="error-message">
+        {{ error }}
+    </div>
+    {% endif %}
+    
+    <!-- Форма загрузки файла -->
+    <div class="upload-box">
+        <h3>📤 Загрузите текстовый файл с данными</h3>
+        <p>Поддерживаются форматы: .csv, .txt (разделитель - запятая или точка с запятой)</p>
+        
+        <form method="post" enctype="multipart/form-data" action="/seminar6/task1_4/upload">
+            <input type="file" name="data_file" id="fileInput" class="file-input" accept=".csv,.txt">
+            <label for="fileInput" class="file-label" id="fileLabel">Выберите файл</label>
+            <div class="file-name" id="fileName">Файл не выбран</div>
+            <button type="submit" class="btn">Загрузить и импортировать</button>
+            <button type="button" class="btn btn-secondary" onclick="loadExample()">Создать пример файла</button>
+        </form>
+    </div>
+    
+    <!-- Пример формата файла -->
+    <div class="example-box">
+        <h3>📋 Пример формата файла (clients.csv)</h3>
+        <pre>
+client_name,contact_person,phone,email,priority
+ООО "Новый клиент",Иванов Петр,+7(495)111-11-11,new@client.ru,1
+АО "Тестовый",Сидорова Анна,+7(495)222-22-22,test@test.ru,2
+ООО "Пример",Козлов Дмитрий,+7(495)333-33-33,example@mail.ru,3</pre>
+        
+        <h3 style="margin-top: 20px;">📋 Пример для сотрудников (employees.csv)</h3>
+        <pre>
+first_name,last_name,position,department,email,phone,salary
+Иван,Сидоров,Тестировщик,TESTING,i.sidorov@test.ru,+7(903)111-11-11,75000
+Мария,Иванова,Аналитик,ANALYSIS,m.ivanova@test.ru,+7(903)222-22-22,85000</pre>
+    </div>
+    
+    <!-- Статистика текущих данных -->
+    <h2>📊 Текущее состояние БД</h2>
+    <div class="stats-box">
+        <div class="stat-card">
+            <div>Клиенты</div>
+            <div class="stat-number">{{ stats.clients }}</div>
+        </div>
+        <div class="stat-card">
+            <div>Сотрудники</div>
+            <div class="stat-number">{{ stats.employees }}</div>
+        </div>
+        <div class="stat-card">
+            <div>Проекты</div>
+            <div class="stat-number">{{ stats.projects }}</div>
+        </div>
+        <div class="stat-card">
+            <div>Тест-кейсы</div>
+            <div class="stat-number">{{ stats.testcases }}</div>
+        </div>
+        <div class="stat-card">
+            <div>Дефекты</div>
+            <div class="stat-number">{{ stats.defects }}</div>
+        </div>
+    </div>
+    
+    <!-- Предпросмотр последних загруженных данных -->
+    {% if preview_data %}
+    <div class="preview-table">
+        <h3>🔍 Предпросмотр последних загруженных данных</h3>
+        <table>
+            <thead>
+                <tr>
+                    {% for col in preview_columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in preview_data %}
+                <tr>
+                    {% for col in preview_columns %}
+                    <td>{{ row[col] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function loadExample() {
+    // Создаем пример CSV файла
+    const exampleContent = 'client_name,contact_person,phone,email,priority\n' +
+                          'ООО "Пример файла",Тестов Тест,+7(495)444-44-44,test@file.ru,1\n' +
+                          'АО "Демо загрузка",Демов Дем,+7(495)555-55-55,demo@file.ru,2';
+    
+    const blob = new Blob([exampleContent], { type: 'text/csv' });
+    const file = new File([blob], 'example_clients.csv', { type: 'text/csv' });
+    
+    // Создаем объект FileList
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    
+    // Подставляем в input
+    const fileInput = document.getElementById('fileInput');
+    fileInput.files = dataTransfer.files;
+    
+    // Обновляем отображение имени файла
+    document.getElementById('fileName').textContent = 'Выбран файл: example_clients.csv';
+    document.getElementById('fileLabel').style.background = '#27ae60';
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    if (this.files.length > 0) {
+        document.getElementById('fileName').textContent = 'Выбран файл: ' + this.files[0].name;
+        document.getElementById('fileLabel').style.background = '#27ae60';
+    } else {
+        document.getElementById('fileName').textContent = 'Файл не выбран';
+        document.getElementById('fileLabel').style.background = '#3498db';
+    }
+});
+</script>
+{% endblock %}
